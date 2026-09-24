@@ -1,0 +1,1 @@
+These are deliberately incomplete input-contract examples, NOT evidence. Replace times, addresses and null hashes only with verified source values. Historical binary version defaults to UNKNOWN and cannot pass D0. Example dates are illustrative, not selected market regimes.

@@ -1,0 +1,31 @@
+{
+  "audit_date": "2026-09-24",
+  "repository": "MeteoraAg/dlmm-sdk",
+  "commit": "576919e3e4368e542c402f000b4264724f7f23ec",
+  "commit_date": "2026-09-03T08:09:21Z",
+  "idl_version": "0.12.0",
+  "program_id": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
+  "files": {
+    "ts-client/src/dlmm/idl/idl.json": "6715f5cf19dffa8651a185ac0dd823218c6a2a75",
+    "commons/src/extensions/lb_pair.rs": "1267045b90b0692d6bf4b54c04023137d168db56",
+    "commons/src/extensions/bin.rs": "6d86e723ad048ec57daa1da7836b7c650f9d39bc",
+    "commons/src/quote.rs": "eef623aa11ed52ce1abf52d1bd8d26d8d841fa26",
+    "commons/src/math/price_math.rs": "38b8a24353ce8417244aa6d40142bc07e2f62ec4",
+    "commons/src/math/u64x64_math.rs": "e101a4720523dc1dd848049a9dc234bd93f94845",
+    "ts-client/package.json": "aad2d0e75c092628447bfe481f16245a4b85989d",
+    "commons/src/pda.rs": "b2b5129d8d9613e3c5768df9f8d14108bf8a23a5",
+    "commons/src/seeds.rs": "b6a02397b69b9c303b6aa06a90ef0eb83383af26"
+  },
+  "hash_algorithm": "git_blob_sha1 (NOT sha256)",
+  "historical_binary_binding": "UNKNOWN; SDK commit does not prove deployed history",
+  "network_execution_in_authoring_environment": "UNAVAILABLE",
+  "source_urls": [
+    "https://docs.meteora.ag/core-products/dlmm/formulas",
+    "https://docs.meteora.ag/core-products/dlmm/collect-fee-mode",
+    "https://docs.meteora.ag/developer-guides/dlmm/changelog",
+    "https://docs.meteora.ag/developer-guides/dlmm/api-reference/overview",
+    "https://solana.com/docs/rpc/http/getblock",
+    "https://solana.com/docs/rpc/http/getaccountinfo"
+  ],
+  "sdk_npm_version": "1.9.14"
+}

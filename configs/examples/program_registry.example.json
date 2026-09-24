@@ -1,0 +1,17 @@
+{
+  "entries": [
+    {
+      "program_id": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
+      "start_slot": 0,
+      "end_slot": 1,
+      "version": "UNKNOWN",
+      "model": "MM_V012",
+      "binary_file": "programs/deployed.so",
+      "binary_sha256": null,
+      "idl_file": "programs/idl.json",
+      "idl_sha256": null,
+      "binding_evidence_file": "programs/deployment_evidence.json",
+      "binding_evidence_sha256": null
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "data_kind": "HISTORICAL",
+  "reference": "reference.csv",
+  "program_registry": "program_registry.json",
+  "pools": [
+    {
+      "pool": "REPLACE_POOL_0",
+      "selection_time_ms": 0,
+      "selection_rule": "REPLACE_WITH_POINT_IN_TIME_RULE",
+      "metadata_source": "REPLACE_WITH_SOURCE"
+    },
+    {
+      "pool": "REPLACE_POOL_1",
+      "selection_time_ms": 0,
+      "selection_rule": "REPLACE_WITH_POINT_IN_TIME_RULE",
+      "metadata_source": "REPLACE_WITH_SOURCE"
+    }
+  ],
+  "windows": [
+    {
+      "label": "low_vol_sideways",
+      "start": "2025-02-10T00:00:00Z",
+      "end": "2025-02-17T00:00:00Z"
+    },
+    {
+      "label": "uptrend",
+      "start": "2025-03-10T00:00:00Z",
+      "end": "2025-03-17T00:00:00Z"
+    },
+    {
+      "label": "downtrend_stress",
+      "start": "2025-04-10T00:00:00Z",
+      "end": "2025-04-17T00:00:00Z"
+    },
+    {
+      "label": "high_vol_roundtrip",
+      "start": "2025-05-10T00:00:00Z",
+      "end": "2025-05-17T00:00:00Z"
+    }
+  ],
+  "segments": [
+    {
+      "id": "w0_p0",
+      "pool": "REPLACE_POOL_0",
+      "start": "2025-02-10T00:00:00Z",
+      "end": "2025-02-17T00:00:00Z",
+      "snapshot": "w0_p0/initial.json",
+      "coverage": "w0_p0/raw_coverage.json",
+      "clocks": "w0_p0/clocks.json",
+      "checkpoints": [
+        {
+          "slot": 0,
+          "capture": "w0_p0/final.json"
+        }
+      ]
+    },
+    {
+      "id": "w0_p1",
+      "pool": "REPLACE_POOL_1",
+      "start": "2025-02-10T00:00:00Z",
+      "end": "2025-02-17T00:00:00Z",
+      "snapshot": "w0_p1/initial.json",
+      "coverage": "w0_p1/raw_coverage.json",
+      "clocks": "w0_p1/clocks.json",
+      "checkpoints": [
+        {
+          "slot": 0,
+          "capture": "w0_p1/final.json"
+        }
+      ]
+    },
+    {
+      "id": "w1_p0",
+      "pool": "REPLACE_POOL_0",
+      "start": "2025-03-10T00:00:00Z",
+      "end": "2025-03-17T00:00:00Z",
+      "snapshot": "w1_p0/initial.json",
+      "coverage": "w1_p0/raw_coverage.json",
+      "clocks": "w1_p0/clocks.json",
+      "checkpoints": [
+        {
+          "slot": 0,
+          "capture": "w1_p0/final.json"
+        }
+      ]
+    },
+    {
+      "id": "w1_p1",
+      "pool": "REPLACE_POOL_1",
+      "start": "2025-03-10T00:00:00Z",
+      "end": "2025-03-17T00:00:00Z",
+      "snapshot": "w1_p1/initial.json",
+      "coverage": "w1_p1/raw_coverage.json",
+      "clocks": "w1_p1/clocks.json",
+      "checkpoints": [
+        {
+          "slot": 0,
+          "capture": "w1_p1/final.json"
+        }
+      ]
+    },
+    {
+      "id": "w2_p0",
+      "pool": "REPLACE_POOL_0",
+      "start": "2025-04-10T00:00:00Z",
+      "end": "2025-04-17T00:00:00Z",
+      "snapshot": "w2_p0/initial.json",
+      "coverage": "w2_p0/raw_coverage.json",
+      "clocks": "w2_p0/clocks.json",
+      "checkpoints": [
+        {
+          "slot": 0,
+          "capture": "w2_p0/final.json"
+        }
+      ]
+    },
+    {
+      "id": "w2_p1",
+      "pool": "REPLACE_POOL_1",
+      "start": "2025-04-10T00:00:00Z",
+      "end": "2025-04-17T00:00:00Z",
+      "snapshot": "w2_p1/initial.json",
+      "coverage": "w2_p1/raw_coverage.json",
+      "clocks": "w2_p1/clocks.json",
+      "checkpoints": [
+        {
+          "slot": 0,
+          "capture": "w2_p1/final.json"
+        }
+      ]
+    },
+    {
+      "id": "w3_p0",
+      "pool": "REPLACE_POOL_0",
+      "start": "2025-05-10T00:00:00Z",
+      "end": "2025-05-17T00:00:00Z",
+      "snapshot": "w3_p0/initial.json",
+      "coverage": "w3_p0/raw_coverage.json",
+      "clocks": "w3_p0/clocks.json",
+      "checkpoints": [
+        {
+          "slot": 0,
+          "capture": "w3_p0/final.json"
+        }
+      ]
+    },
+    {
+      "id": "w3_p1",
+      "pool": "REPLACE_POOL_1",
+      "start": "2025-05-10T00:00:00Z",
+      "end": "2025-05-17T00:00:00Z",
+      "snapshot": "w3_p1/initial.json",
+      "coverage": "w3_p1/raw_coverage.json",
+      "clocks": "w3_p1/clocks.json",
+      "checkpoints": [
+        {
+          "slot": 0,
+          "capture": "w3_p1/final.json"
+        }
+      ]
+    }
+  ]
+}

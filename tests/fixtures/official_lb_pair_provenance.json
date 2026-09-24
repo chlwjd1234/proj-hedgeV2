@@ -1,0 +1,7 @@
+{
+  "data_kind": "OFFICIAL_SDK_ACCOUNT_FIXTURE",
+  "file_sha256": "ee2fc6b3ea25bc7366eec95097547124d94cda896e3dccb7457a1184a06b4e1f",
+  "git_blob_sha1": "5b5fa60de395394440c9d8fc9f5fc04e9ab5c3ca",
+  "not_historical_sol_usdc_evidence": true,
+  "source": "https://github.com/MeteoraAg/dlmm-sdk/blob/576919e3e4368e542c402f000b4264724f7f23ec/artifacts/FJbEo74c2W4QLBBVUfUvi8VBWXtMdJVPuFpq2f6UV1iB/FJbEo74c2W4QLBBVUfUvi8VBWXtMdJVPuFpq2f6UV1iB.json"
+}

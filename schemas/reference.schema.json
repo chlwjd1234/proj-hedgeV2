@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "External reference observation",
+  "type": "object",
+  "required": [
+    "ts_ms",
+    "available_ms",
+    "price",
+    "source",
+    "symbol"
+  ],
+  "properties": {
+    "ts_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "available_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "price": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "symbol": {
+      "const": "SOL/USDC"
+    }
+  },
+  "additionalProperties": false
+}

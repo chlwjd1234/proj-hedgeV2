@@ -1,0 +1,49 @@
+[research]
+name = "meteora_sol_usdc_d0_d1"
+# SCENARIO_NOT_HISTORICAL cannot on its own open the D3 research gate.
+cost_evidence_mode = "SCENARIO_NOT_HISTORICAL"
+
+[data]
+dataset = "data/pilot/dataset.json"
+live_pool_ids = []
+
+[network]
+timeout_seconds = 15
+retries = 1
+requests_per_second = 3
+sample_blocks_per_pool = 2
+
+[pilot]
+initial_nav = "10000"
+lp_fraction = "0.40"
+width_multipliers = [1, 2]
+capital_ladder = [1000, 10000, 100000]
+reference_max_age_ms = 2000
+daily_reference_max_age_ms = 120000
+markout_max_delay_ms = 2000
+markout_horizons_ms = [0, 1000, 10000, 60000, 300000]
+capacity_samples_per_case = 12
+capacity_stride = 101
+model_cost_uncertainty_usdc_per_window = "25"
+
+# Explicit illustrative fixed entry/exit scenarios, NOT observed historical costs.
+# Principal is attributed to existing shares, not minted using these costs.
+[costs]
+lp_execution_cost = "1"
+composition_cost = "0"
+priority_cost = "0.10"
+base_transaction_cost = "0.01"
+exit_lp_execution_cost = "1"
+exit_composition_cost = "0"
+exit_priority_cost = "0.10"
+exit_base_transaction_cost = "0.01"
+
+[perp]
+market_bundle = "data/hyperliquid/market.json"
+collateral = "3000"
+policy = "boundary"
+band_bps = 200
+latency_ms = 1000
+execution = "taker"
+maker_timeout_ms = 2000
+max_book_age_ms = 2000

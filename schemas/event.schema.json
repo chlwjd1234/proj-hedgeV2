@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Normalized event v1",
+  "type": "object",
+  "required": [
+    "order",
+    "block_time_ms",
+    "tx_signature",
+    "pool",
+    "kind"
+  ],
+  "properties": {
+    "order": {
+      "type": "object",
+      "required": [
+        "slot",
+        "transaction_index",
+        "instruction_index"
+      ],
+      "properties": {
+        "slot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "transaction_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instruction_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inner_instruction_index": {
+          "type": "integer",
+          "minimum": -1
+        },
+        "event_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "block_time_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "tx_signature": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pool": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string"
+    },
+    "program_id": {
+      "type": "string"
+    },
+    "program_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "binary_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "idl_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "clock_unix_timestamp": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "clock_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "payload": {
+      "type": "object"
+    },
+    "observed": {
+      "type": "object"
+    },
+    "pre_state_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "post_state_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "raw_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "data_kind": {
+      "enum": [
+        "HISTORICAL",
+        "SYNTHETIC",
+        "CURRENT"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

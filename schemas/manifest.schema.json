@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Immutable stage manifest v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "stage",
+    "git_sha",
+    "source_fingerprint",
+    "config",
+    "software",
+    "inputs",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string"
+    },
+    "git_sha": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "config": {
+      "type": "object"
+    },
+    "software": {
+      "type": "object"
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    }
+  }
+}

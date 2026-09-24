@@ -1,0 +1,21 @@
+{
+  "data_kind": "HISTORICAL",
+  "end_ms": 0,
+  "observation_delay_ms": 1000,
+  "books": {
+    "path": "books.jsonl",
+    "sha256": null
+  },
+  "terms": {
+    "path": "terms.json",
+    "sha256": null
+  },
+  "funding": {
+    "path": "funding.json",
+    "sha256": null
+  },
+  "decisions": {
+    "path": "decisions.jsonl",
+    "sha256": null
+  }
+}

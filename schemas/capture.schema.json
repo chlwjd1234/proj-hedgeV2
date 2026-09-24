@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Account-state capture",
+  "type": "object",
+  "required": [
+    "slot",
+    "timestamp_ms",
+    "boundary",
+    "state",
+    "source_kind"
+  ],
+  "properties": {
+    "slot": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "timestamp_ms": {
+      "type": "integer"
+    },
+    "boundary": {
+      "enum": [
+        "END_SLOT",
+        "BEFORE_INSTRUCTION",
+        "AFTER_INSTRUCTION"
+      ]
+    },
+    "state": {
+      "type": "object"
+    },
+    "source_kind": {
+      "type": "string"
+    },
+    "raw_accounts": {
+      "type": "object"
+    },
+    "raw_accounts_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "raw_sha256": {
+      "type": "string"
+    },
+    "source_receipt": {},
+    "instruction_order": {
+      "type": "object",
+      "required": [
+        "slot",
+        "transaction_index",
+        "instruction_index"
+      ],
+      "properties": {
+        "slot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "transaction_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instruction_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inner_instruction_index": {
+          "type": "integer",
+          "minimum": -1
+        },
+        "event_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "tx_signature": {
+      "type": "string"
+    }
+  }
+}
