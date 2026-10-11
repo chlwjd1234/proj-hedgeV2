@@ -88,3 +88,35 @@ def test_gzip_financial_artifact_determinism(tmp_path):
     a=tmp_path/'one.jsonl.gz';b=tmp_path/'two.jsonl.gz'
     write_jsonl(a,[{'x':1}]);write_jsonl(b,[{'x':1}])
     assert a.read_bytes()==b.read_bytes()
+
+
+def test_large_current_capture_avoids_getmultipleaccounts_100_key_limit_and_labels_nonatomic():
+    raw=bytearray(account_bytes(json.loads((Path(__file__).parent/'fixtures/official_lb_pair.json').read_text())))
+    raw[88:120]=b58decode(SOL_MINT);raw[120:152]=b58decode(USDC_MINT)
+    pool='FJbEo74c2W4QLBBVUfUvi8VBWXtMdJVPuFpq2f6UV1iB'
+    pair={'owner':PROGRAM_ID,'data':[base64.b64encode(raw).decode(),'base64'],'lamports':1,'executable':False,'rentEpoch':0}
+    arrays=[]
+    for idx in range(101):
+        a=bytearray(10136);a[:8]=discriminator('account','BinArray')
+        a[8:16]=idx.to_bytes(8,'little',signed=True);a[24:56]=b58decode(pool)
+        key=b58encode((idx+1).to_bytes(32,'little'))
+        arrays.append({'pubkey':key,'account':{'owner':PROGRAM_ID,'data':[base64.b64encode(a).decode(),'base64'],
+                                                'lamports':1,'executable':False,'rentEpoch':0}})
+    bitmap=find_program_address([b'bitmap',b58decode(pool)],PROGRAM_ID)[0]
+    clock={'owner':'Sysvar1111111111111111111111111111111111111',
+           'data':[base64.b64encode(struct.pack('<QqQQq',501,0,0,0,1000)).decode(),'base64'],
+           'lamports':1,'executable':False,'rentEpoch':0}
+    class RPC:
+        http=type('H',(),{'last_raw_hash':'synthetic'})()
+        def account(self,address):return {'value':pair}
+        def program_accounts(self,filters):return {'context':{'slot':500},'value':arrays}
+        def multiple_accounts(self,keys,min_context_slot=None):
+            assert len(keys)<100 and min_context_slot==500
+            values=[None if x==bitmap else pair if x==pool else clock if x==CLOCK_ID else pair for x in keys]
+            return {'context':{'slot':501},'value':values}
+    cap=capture_pool(RPC(),pool)
+    assert cap['atomic_current_snapshot'] is False
+    assert cap['historical_seed_allowed'] is False
+    assert cap['context_slot_span']==1
+    assert cap['source_kind']=='CURRENT_RPC_NONATOMIC_VALIDATION_VECTOR'
+    assert len(cap['state']['bins'])==101*70

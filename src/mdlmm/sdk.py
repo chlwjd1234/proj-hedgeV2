@@ -53,9 +53,33 @@ def oracle(root:Path,capture_path:Path,output:Path,requests:list[dict])->dict:
     for item in answer['quotes']:
         q=quote_exact_in(state,int(item['amount_in']),item['swap_for_y'],capture['clock']['unix_timestamp'])
         sdkq=item['quote']
-        if int(sdkq['outAmount'])!=q.amount_out or int(sdkq['fee'])!=q.fee:
-            raise ValidationError('official SDK quote/fee parity failed')
-        comparisons.append({'amount_in':q.amount_in,'amount_out':q.amount_out,'fee':q.fee})
+        # Official TS SDK swapQuote() exposes fee and protocolFee separately
+        # after splitFee().  Our q.fee is TOTAL trader fee, while
+        # q.protocol_fee is the protocol component.  Hence SDK `fee` is the
+        # LP/user component q.fee - q.protocol_fee.
+        expected={
+            'consumedInAmount':q.amount_in,
+            'outAmount':q.amount_out,
+            'fee':q.fee-q.protocol_fee,
+            'protocolFee':q.protocol_fee,
+        }
+        observed={k:int(sdkq[k]) for k in expected}
+        mismatch={k:{'expected':expected[k],'observed':observed[k]}
+                  for k in expected if expected[k]!=observed[k]}
+        if mismatch:
+            raise ValidationError('official SDK quote parity failed: '+json.dumps({
+                'amount_in':int(item['amount_in']),
+                'swap_for_y':bool(item['swap_for_y']),
+                'mismatch':mismatch,
+                'python_total_trader_fee':q.fee,
+                'python_lp_user_fee':q.fee-q.protocol_fee,
+                'python_protocol_fee':q.protocol_fee,
+            },sort_keys=True,separators=(',',':')))
+        comparisons.append({
+            'amount_in':q.amount_in,'amount_out':q.amount_out,
+            'total_trader_fee':q.fee,'lp_user_fee':q.fee-q.protocol_fee,
+            'protocol_fee':q.protocol_fee,
+        })
     if not comparisons or not bin_count:
         raise Unavailable('empty SDK parity comparison')
     return {'status':'PASS','validation_level':'SDK_PARITY','bins':bin_count,'quotes':comparisons,

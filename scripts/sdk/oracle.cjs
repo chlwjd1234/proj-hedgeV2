@@ -25,7 +25,10 @@ async function main() {
     throw new Error('official SDK version mismatch');
   const {PublicKey} = require('@solana/web3.js');
   const BN = require('bn.js');
-  const DLMM = pkg.default?.default || pkg.default || pkg.DLMM;
+  const DLMM =
+    (pkg && typeof pkg.create === 'function')
+      ? pkg
+      : (pkg.default?.default || pkg.default || pkg.DLMM);
   if (!DLMM || typeof DLMM.create !== 'function') throw new Error('UNAVAILABLE: unsupported official SDK export');
   const capture = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
   const requests = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));

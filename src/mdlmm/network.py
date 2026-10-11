@@ -103,12 +103,14 @@ class Http:
 class SolanaRPC:
     def __init__(self, http: Http, url: str | None = None):
         self.http = http
-        self.url = url or os.environ.get('SOLANA_RPC_URL') or 'https://api.mainnet-beta.solana.com'
+        self.url = url or os.environ.get('SOLANA_RPC_URL')
         self.n = 0
 
     def call(self, method: str, params: list | None = None):
         if method not in READ_METHODS:
             raise ValidationError(f'RPC write/unapproved method prohibited: {method}')
+        if not self.url:
+            raise Unavailable('SOLANA_RPC_URL is required; public Solana RPC fallback is disabled')
         self.n += 1
         response = self.http.request(self.url, {'jsonrpc': '2.0', 'id': self.n, 'method': method, 'params': params or []},
                                      metadata={'source': 'solana_rpc', 'commitment': 'finalized'})
@@ -121,7 +123,12 @@ class SolanaRPC:
 
     def block(self, slot: int) -> dict:
         return self.call('getBlock', [slot, {'commitment': 'finalized', 'encoding': 'json',
-                         'transactionDetails': 'full', 'rewards': False, 'maxSupportedTransactionVersion': 0}])
+                         'transactionDetails': 'full', 'rewards': False, 'maxSupportedTransactionVersion': 1}])
+
+
+    def transaction(self, signature: str) -> dict:
+        return self.call('getTransaction', [signature, {'commitment': 'finalized', 'encoding': 'json',
+                         'maxSupportedTransactionVersion': 1}])
 
     def signatures(self, address: str, before: str | None = None, limit: int = 1000) -> list:
         opts = {'commitment': 'finalized', 'limit': min(limit, 1000)}
@@ -132,9 +139,20 @@ class SolanaRPC:
     def account(self, address: str) -> dict:
         return self.call('getAccountInfo', [address, {'commitment': 'finalized', 'encoding': 'base64'}])
 
-    def program_accounts(self, filters: list) -> dict:
-        return self.call('getProgramAccounts', [PROGRAM_ID, {'commitment': 'finalized', 'encoding': 'base64',
-                                                            'withContext': True, 'filters': filters}])
+    def multiple_accounts(self, addresses: list[str], *, min_context_slot: int | None = None) -> dict:
+        if len(addresses) > 100:
+            raise Unsupported('getMultipleAccounts accepts at most 100 pubkeys')
+        opts = {'commitment': 'finalized', 'encoding': 'base64'}
+        if min_context_slot is not None:
+            opts['minContextSlot'] = int(min_context_slot)
+        return self.call('getMultipleAccounts', [addresses, opts])
+
+    def program_accounts(self, filters: list, *, min_context_slot: int | None = None) -> dict:
+        opts = {'commitment': 'finalized', 'encoding': 'base64',
+                'withContext': True, 'filters': filters}
+        if min_context_slot is not None:
+            opts['minContextSlot'] = int(min_context_slot)
+        return self.call('getProgramAccounts', [PROGRAM_ID, opts])
 
 
 def discover_rpc(rpc: SolanaRPC) -> dict:
@@ -186,55 +204,148 @@ def discover_api(http: Http, max_pages: int = 20) -> dict:
             'mint_verified': False, 'historical_universe_complete': False}
 
 
-def capture_pool(rpc: SolanaRPC, pool: str, *, attempts: int = 3) -> dict:
-    """All pool, bin, reserve, mint and Clock accounts in ONE coherent RPC response.
+def rank_current_api_pools(http: Http, discovery: dict, *, limit: int = 20) -> dict:
+    """Rank CURRENT exact SOL/USDC pools by official Meteora 24h volume.
 
-    Discovering >100 necessary accounts fails rather than stitching different
-    slots together. A provider's archival snapshot export can lift that bound.
+    The Data API is only a candidate-ranking hint. Every returned address is
+    intersected with the exact-mint, enabled on-chain accounts already decoded
+    by discover_rpc; it is never accepted as chain-state truth by itself.
+    """
+    enabled = {p['pool']: p for p in discovery['pools'] if p.get('status') == 0}
+    query = urllib.parse.urlencode({'page': 1, 'page_size': 100, 'query': 'SOL-USDC',
+                                    'sort_by': 'volume_24h:desc', 'filter_by': 'is_blacklisted=false'})
+    response = http.request(DATA_API + '/pools?' + query,
+                            metadata={'source': 'meteora_data_api', 'purpose': 'CURRENT_D0_POOL_RANKING'})
+    if isinstance(response, list):
+        values = response
+        total = len(values)
+    elif isinstance(response, dict):
+        values = response.get('data', response.get('pools', []))
+        if isinstance(values, dict):
+            values = values.get('data', values.get('pools', []))
+        total = response.get('total')
+    else:
+        raise Unsupported('unrecognized Meteora ranked-pool response schema')
+    if not isinstance(values, list):
+        raise Unsupported('Meteora ranked-pool payload is not a list')
+
+    ranked=[]
+    for row in values:
+        if not isinstance(row,dict):
+            continue
+        address=row.get('address') or row.get('pool_address')
+        tx=row.get('token_x') or {}; ty=row.get('token_y') or {}
+        mx=tx.get('address') or row.get('token_x_mint')
+        my=ty.get('address') or row.get('token_y_mint')
+        if address not in enabled or {mx,my}!={SOL_MINT,USDC_MINT}:
+            continue
+        volume=row.get('volume') or {}; fees=row.get('fees') or {}; pc=row.get('pool_config') or {}
+        def number(x):
+            try:return float(x or 0)
+            except (TypeError,ValueError):return 0.0
+        ranked.append({'pool':address,'name':row.get('name'),
+                       'volume_24h':number(volume.get('24h')),'tvl':number(row.get('tvl')),
+                       'fees_24h':number(fees.get('24h')),'bin_step':pc.get('bin_step'),
+                       'base_fee_pct':pc.get('base_fee_pct'),'max_fee_pct':pc.get('max_fee_pct')})
+    ranked.sort(key=lambda r:(r['volume_24h'],r['tvl']),reverse=True)
+    if not ranked:
+        raise Unavailable('official Data API returned no exact on-chain-enabled SOL/USDC ranking candidates')
+    return {'basis':'OFFICIAL_DATA_API_24H_VOLUME_HINT_X_ONCHAIN_EXACT_MINT',
+            'api_total':total,'api_rows_returned':len(values),'exact_onchain_matches':len(ranked),
+            'ranking':ranked[:max(1,int(limit))]}
+
+
+def capture_pool(rpc: SolanaRPC, pool: str, *, attempts: int = 3) -> dict:
+    """Capture a complete current DLMM mechanics validation vector.
+
+    BinArray accounts are obtained from one withContext getProgramAccounts call;
+    core pool/Clock/mint/reserve/bitmap/reward accounts are obtained from one
+    getMultipleAccounts call constrained with minContextSlot >= the BinArray
+    context. If both contexts are equal the capture is an atomic current
+    snapshot. If they differ, the exact frozen bytes are still valid for
+    decoder/official-SDK mechanics parity, but are explicitly labelled a
+    NON_ATOMIC_CURRENT_VALIDATION_VECTOR and must never seed historical replay.
+
+    This avoids the documented 100-pubkey getMultipleAccounts limit without
+    silently stitching chunks and pretending they are one historical state.
     """
     filters = [{'memcmp': {'offset': 0, 'bytes': b58encode(discriminator('account', 'BinArray'))}},
                {'memcmp': {'offset': 24, 'bytes': pool}}]
+    zero='11111111111111111111111111111111'
+    last_reason='unknown'
     for _ in range(attempts):
         pair_initial = decode_lb_pair(account_bytes(rpc.account(pool)['value']))
+
         arrays = rpc.program_accounts(filters)
-        array_keys = sorted(x['pubkey'] for x in arrays['value'])
+        arrays_hash = rpc.http.last_raw_hash
+        array_slot = int(arrays['context']['slot'])
+        array_items = arrays['value']
+        array_keys = sorted(x['pubkey'] for x in array_items)
+        array_raw = {x['pubkey']: x['account'] for x in array_items}
+
         bitmap, _ = find_program_address([b'bitmap', b58decode(pool)], PROGRAM_ID)
         reward_keys = [reward[k] for reward in pair_initial['rewards'] for k in ('mint','vault')
-                       if reward[k] != '11111111111111111111111111111111']
-        keys = list(dict.fromkeys([pool, CLOCK_ID, pair_initial['token_x_mint'], pair_initial['token_y_mint'],
-                pair_initial['reserve_x'], pair_initial['reserve_y'], bitmap, *reward_keys, *array_keys]))
-        if len(keys) > 100:
-            raise Unsupported(f'{len(keys)} accounts require an atomic archival/provider snapshot, not mixed RPC slots')
-        result = rpc.call('getMultipleAccounts', [keys, {'commitment': 'finalized', 'encoding': 'base64'}])
-        capture_hash = rpc.http.last_raw_hash
-        slot = result['context']['slot']
-        values = result['value']
-        if any(v is None and k != bitmap for k,v in zip(keys,values)):
+                       if reward[k] != zero]
+        core_keys = list(dict.fromkeys([
+            pool, CLOCK_ID, pair_initial['token_x_mint'], pair_initial['token_y_mint'],
+            pair_initial['reserve_x'], pair_initial['reserve_y'], bitmap, *reward_keys
+        ]))
+        if len(core_keys) > 100:
+            raise Unsupported(f'core account set unexpectedly exceeds RPC bound: {len(core_keys)}')
+
+        if hasattr(rpc,'multiple_accounts'):
+            core = rpc.multiple_accounts(core_keys,min_context_slot=array_slot)
+        else:  # offline synthetic test doubles
+            core = rpc.call('getMultipleAccounts', [core_keys, {'commitment':'finalized','encoding':'base64',
+                                                                 'minContextSlot':array_slot}])
+        core_hash = rpc.http.last_raw_hash
+        core_slot = int(core['context']['slot'])
+        core_values = core['value']
+        if any(v is None and k != bitmap for k,v in zip(core_keys,core_values)):
+            last_reason='required core account absent'
             continue
-        # Recheck list: no silent omission of concurrently initialized arrays.
-        after = rpc.program_accounts(filters)
-        if sorted(x['pubkey'] for x in after['value']) != array_keys:
-            continue
-        raw_map = dict(zip(keys, values))
+
+        raw_map = dict(zip(core_keys,core_values))
+        raw_map.update(array_raw)
         pair = decode_lb_pair(account_bytes(raw_map[pool]))
         if any(pair[k] != pair_initial[k] for k in ('token_x_mint','token_y_mint','reserve_x','reserve_y','rewards')):
+            last_reason='pool core-address set changed during capture'
             continue
-        bin_arrays = [decode_bin_array(account_bytes(raw_map[k])) for k in array_keys]
+
+        bin_arrays = [decode_bin_array(account_bytes(array_raw[k])) for k in array_keys]
         clock = decode_clock(base64.b64decode(raw_map[CLOCK_ID]['data'][0]))
-        if clock['slot'] != slot:
-            raise ValidationError('Clock/context slot mismatch')
-        # This captures all LIVE arrays at the snapshot, not all historical arrays.
-        state = build_pool_state(pool, pair, bin_arrays, slot=slot, complete_bin_map=True)
-        return {'schema_version': 1, 'pool': pool, 'slot': slot, 'boundary': 'END_SLOT',
-                'clock': clock, 'raw_accounts': raw_map, 'raw_sha256': capture_hash,
-                'timestamp_ms': clock['unix_timestamp']*1000, 'raw_accounts_sha256':digest(raw_map),
-                'source_kind':'CURRENT_RPC','source_receipt':{'method':'getMultipleAccounts','commitment':'finalized',
-                    'raw_sha256':capture_hash,'context_slot':slot},
-                'bitmap_extension_address': bitmap,
+        if clock['slot'] != core_slot:
+            raise ValidationError('Clock/core context slot mismatch')
+
+        atomic = array_slot == core_slot
+        context_span = core_slot-array_slot
+        if context_span < 0:
+            raise ValidationError('core context predates minContextSlot-constrained BinArray context')
+
+        # The BinArray set is complete at array_slot. A mixed-slot vector is
+        # explicitly NOT a factual state claim at core_slot.
+        state = build_pool_state(pool,pair,bin_arrays,slot=core_slot,complete_bin_map=True)
+        combined_hash=digest({'bin_arrays_raw_sha256':arrays_hash,'core_raw_sha256':core_hash,
+                              'bin_array_context_slot':array_slot,'core_context_slot':core_slot})
+        source_kind='CURRENT_RPC_ATOMIC' if atomic else 'CURRENT_RPC_NONATOMIC_VALIDATION_VECTOR'
+        note=('Atomic current snapshot; still not a historical pre-transaction state' if atomic else
+              'Non-atomic current validation vector. Exact frozen bytes may be used only for decoder/SDK mechanics parity; '
+              'must not seed factual or historical replay.')
+        return {'schema_version':2,'pool':pool,'slot':core_slot,'boundary':'CURRENT_VALIDATION_VECTOR',
+                'clock':clock,'raw_accounts':raw_map,'raw_sha256':combined_hash,
+                'timestamp_ms':clock['unix_timestamp']*1000,'raw_accounts_sha256':digest(raw_map),
+                'source_kind':source_kind,'atomic_current_snapshot':atomic,
+                'factual_current_snapshot':atomic,'historical_seed_allowed':False,
+                'context_slots':{'bin_arrays':array_slot,'core':core_slot},
+                'context_slot_span':context_span,
+                'source_receipt':{'methods':['getProgramAccounts','getMultipleAccounts'],
+                    'commitment':'finalized','bin_arrays_raw_sha256':arrays_hash,'core_raw_sha256':core_hash,
+                    'bin_array_context_slot':array_slot,'core_context_slot':core_slot,
+                    'get_multiple_accounts_count':len(core_keys),'bin_array_account_count':len(array_keys)},
+                'bitmap_extension_address':bitmap,
                 'absent_accounts':[k for k,v in raw_map.items() if v is None],
-                'state': state.to_dict(), 'decoded_pair': pair,
-                'note': 'Current snapshot cannot seed transactions at or before this slot'}
-    raise Unavailable('could not capture coherent pool account set')
+                'state':state.to_dict(),'decoded_pair':pair,'note':note}
+    raise Unavailable('could not construct current mechanics validation vector: '+last_reason)
 
 
 def program_fingerprint(rpc: SolanaRPC, program: str = PROGRAM_ID) -> dict:
