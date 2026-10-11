@@ -8,8 +8,22 @@ from typing import Iterable, Iterator
 
 from .errors import Unavailable, Unsupported, ValidationError
 from .mechanics import quote_exact_in
-from .model import Event, PoolState, Bin, PROGRAM_ID, Level, Order, economic_state_hash
+from .model import (Event, PoolState, Bin, PROGRAM_ID, Level, Order, economic_state_hash,
+                    ECONOMIC_STATE_HASH_SCHEMA)
 from .util import digest, hash_file, read_json, safe_path
+
+
+MM_ACCOUNT_PARITY_SCOPE = 'MM_RESERVES_SUPPLY_PRICE_ACTIVE_FEE_PARAMETERS_REFERENCE'
+MM_ACCOUNT_PARITY_EXCLUDED = (
+    'fee_growth_rounding', 'oracle_ring', 'reward_counters', 'full_account_bytes',
+    'limit_order_fulfilled_amounts', 'limit_order_fee_counters', 'limit_order_order_age',
+    'limit_order_total_processing_amount_and_side', 'reward_initialization_mutation',
+    'protocol_fee_balance_mutation', 'bin_array_bitmap_mutation', 'last_updated_at_mutation',
+)
+MM_UNSUPPORTED_SEMANTICS = (
+    'LIMIT_ORDER_FILL_AND_STATE_MUTATION', 'EXACT_OUT', 'HOST_REFERRAL_FEE_SPLIT',
+    'PRICE_IMPACT_INSTRUCTION_BOUNDS', 'PROTOCOL_REWARD_BITMAP_COUNTER_MUTATION',
+)
 
 
 class VersionRegistry:
@@ -91,8 +105,8 @@ def compare_states(actual: PoolState, expected: PoolState) -> dict:
     if digest(a) != digest(b):
         fields = [k for k in a if a[k] != b[k]]
         raise ValidationError('account checkpoint mismatch: ' + ','.join(fields))
-    return {'scope': 'MM_RESERVES_SUPPLY_PRICE_ACTIVE_FEE_PARAMETERS_REFERENCE', 'equal': True,
-            'excluded': ['fee_growth_rounding', 'oracle_ring', 'reward_counters', 'full_account_bytes']}
+    return {'scope': MM_ACCOUNT_PARITY_SCOPE, 'equal': True,
+            'excluded': list(MM_ACCOUNT_PARITY_EXCLUDED)}
 
 
 class Replay:
@@ -137,13 +151,28 @@ class Replay:
         fees, fill_rows = [], []
         quote_summary = None
         if event.kind == 'SWAP':
-            if event.payload.get('exact_out'):
+            payload = event.payload
+            if (payload.get('exact_out') or
+                    payload.get('instruction_name') in ('swap_exact_out', 'swap_exact_out2')):
                 raise Unsupported('exact-out factual replay requires SDK/SVM adapter')
+            if payload.get('instruction_name') in ('swap_with_price_impact', 'swap_with_price_impact2'):
+                raise Unsupported('price-impact swap bounds require an instruction-semantics adapter')
+            canonical = payload.get('canonical_pair_verified') is True
+            if event.data_kind == 'HISTORICAL':
+                if not canonical or payload.get('normalization_mode') != 'CANONICAL_PAIRED':
+                    raise Unsupported('historical swap requires a verified canonical instruction/event pair')
+                for b in self.state.bins.values():
+                    if any(getattr(b, field) is None for field in
+                           ('open_order_amount', 'processed_order_remaining_amount',
+                            'total_processing_order_amount')):
+                        raise Unavailable('historical MM replay cannot treat unknown LO liquidity as zero')
+            if canonical and payload.get('host_fee_present') is not False:
+                raise Unsupported('canonical host account present/unknown requires verified referral split adapter')
             timestamp = self._clock(event)
             q = quote_exact_in(self.state, int(event.payload['amount_in']),
                                event.payload['swap_for_y'], timestamp, slot=event.order.slot)
             expected = event.observed
-            for field, actual in (('amount_out',q.amount_out), ('start_bin',q.start_bin), ('end_bin',q.end_bin),
+            for field, actual in (('amount_in',q.amount_in), ('amount_out',q.amount_out), ('start_bin',q.start_bin), ('end_bin',q.end_bin),
                                   ('fee',q.fee), ('amount_left',q.amount_left)):
                 if field in expected and expected[field] != actual:
                     raise ValidationError(f'swap observed {field}={expected[field]} vs replay {actual}')
@@ -249,7 +278,11 @@ class Replay:
         return {'events': self.event_count, 'checkpoints': self.checkpoints,
                 'validation_level': str(self.scope_level), 'partial_clock_events': self.partial_clock_events,
                 'max_token_conservation_residual': self.max_token_residual,
-                'account_parity_scope': 'MM_RESERVES_SUPPLY_PRICE_ACTIVE_FEE_PARAMETERS_REFERENCE',
+                'account_parity_scope': MM_ACCOUNT_PARITY_SCOPE,
+                'account_parity_excluded': list(MM_ACCOUNT_PARITY_EXCLUDED),
+                'mechanics_scope': 'MM_ONLY_EXACT_IN',
+                'unsupported_semantics': list(MM_UNSUPPORTED_SEMANTICS),
+                'economic_hash_schema': ECONOMIC_STATE_HASH_SCHEMA,
                 'full_program_byte_parity': 'UNAVAILABLE',
                 'data_kind': self.initial.data_kind}
 
@@ -262,7 +295,9 @@ def compact_trace(row:dict)->dict:
     # Input to this function may use int or JSON-normalized str keys.
     deleted=[str(k) for k in pre['bins'] if k not in post['bins'] and str(k) not in post['bins']]
     out={k:v for k,v in row.items() if k not in ('pre','post')}
-    out.update(trace_format='COMPACT_STATE_DELTAS_V1',state_patch={'header':header,'bins':bins,'deleted':deleted},
+    out.update(trace_format='COMPACT_STATE_DELTAS_V2',
+               economic_hash_schema=ECONOMIC_STATE_HASH_SCHEMA,
+               state_patch={'header':header,'bins':bins,'deleted':deleted},
                pre_economic_hash=economic_dict_hash(pre),
                post_economic_hash=economic_dict_hash(post))
     return out
@@ -276,8 +311,9 @@ def expand_traces(rows:Iterable[dict],initial:PoolState,*,verify_hashes:bool=Tru
     state=initial.to_dict()
     state['bins']={str(k):v for k,v in state['bins'].items()}
     for row in rows:
-        if row.get('trace_format')!='COMPACT_STATE_DELTAS_V1':
-            raise Unsupported('only versioned compact factual traces are accepted')
+        if (row.get('trace_format') != 'COMPACT_STATE_DELTAS_V2' or
+                row.get('economic_hash_schema') != ECONOMIC_STATE_HASH_SCHEMA):
+            raise Unsupported('compact trace/hash schema is not V2; frozen legacy traces are not automatically rehashed')
         if verify_hashes and economic_dict_hash(state)!=row['pre_economic_hash']:
             raise ValidationError('compact trace pre-state continuity mismatch')
         pre=state

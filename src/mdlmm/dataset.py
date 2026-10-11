@@ -4,7 +4,8 @@ from dataclasses import asdict
 from pathlib import Path
 from .codec import account_bytes,decode_lb_pair,decode_bin_array,decode_clock,build_pool_state,discriminator,IdlCodec
 from .errors import Unavailable,Unsupported,ValidationError
-from .model import PoolState,Event,PROGRAM_ID,CLOCK_ID
+from .model import (PoolState,Event,Bin,PROGRAM_ID,CLOCK_ID,
+                    BIN_LIMIT_ORDER_FIELDS,POOL_PRESERVED_ACCOUNT_FIELDS)
 from .normalize import normalize_block
 from .replay import VersionRegistry,compare_states
 from .util import read_json,read_jsonl,safe_path,hash_file,digest,write_json,iso_ms
@@ -15,6 +16,30 @@ def ref_file(root:Path,relative:str)->dict:
     if not path.is_file():
         raise Unavailable(f'input file missing: {relative}')
     return {'path':relative,'sha256':hash_file(path)}
+
+
+def verify_preserved_bin_fields(captured: Bin, decoded: Bin):
+    """Known serialized LO fields must agree with independently decoded bytes.
+
+    Missing legacy fields remain unknown. This validates the capture, not the
+    MM-only replay engine's ability to update LO counters.
+    """
+    for field in BIN_LIMIT_ORDER_FIELDS:
+        value = getattr(captured, field)
+        if value is not None and value != getattr(decoded, field):
+            raise ValidationError(f'raw account preserved field mismatch: bin {captured.bin_id}.{field}')
+
+
+def verify_preserved_account_fields(captured: PoolState, decoded: PoolState):
+    """Verify represented account evidence without enlarging replay parity."""
+    for field in POOL_PRESERVED_ACCOUNT_FIELDS:
+        value = getattr(captured, field)
+        if value is not None and value != getattr(decoded, field):
+            raise ValidationError(f'raw account preserved field mismatch: pool.{field}')
+    for bin_id, b in captured.bins.items():
+        if bin_id not in decoded.bins:
+            raise ValidationError('captured bin has no decoded raw account evidence')
+        verify_preserved_bin_fields(b, decoded.bins[bin_id])
 
 
 class Dataset:
@@ -89,6 +114,7 @@ class Dataset:
             decoded=build_pool_state(state.pool,pair,arrays,slot=state.slot,
                                      complete_bin_map=state.complete_bin_map,data_kind=self.kind)
             compare_states(state,decoded)
+            verify_preserved_account_fields(state,decoded)
             if not capture.get('raw_sha256') or not capture.get('source_receipt'):
                 raise Unavailable('historical capture needs raw source receipt')
             if capture.get('raw_accounts_sha256')!=digest(raw):
@@ -133,6 +159,10 @@ class Dataset:
         projection=lambda rows: sorted([{k:r[k] for k in fields} for r in rows],key=lambda r:r['bin_id'])
         if projection(expected)!=projection(payload.get('bins_after',[])):
             raise ValidationError('liquidity normalized bin delta differs from raw account bytes')
+        for item in payload.get('bins_after', []):
+            b = Bin(**item)
+            b.validate()
+            verify_preserved_bin_fields(b, after.bins[b.bin_id])
         if not payload.get('token_flow_evidence'):
             raise Unavailable('liquidity flow requires independent transaction transfer evidence')
         flow=read_json(self.file(payload['token_flow_evidence']))
@@ -231,7 +261,8 @@ class Dataset:
                 if idl_name not in idl_cache:
                     idl_cache[idl_name]=IdlCodec.load(safe_path(self.root,idl_name))
                 decoded=normalize_block(slot,saved['block'],{segment['pool']},raw_hash=saved.get('raw_sha256'),
-                                        idl=idl_cache[idl_name],registry_entry=binding,clock_unix_timestamp=clocks.get(slot))
+                                        idl=idl_cache[idl_name],registry_entry=binding,clock_unix_timestamp=clocks.get(slot),
+                                        require_canonical_swaps=True)
                 with index:
                     for row in decoded['events']:
                         event=Event.from_dict(row)
@@ -243,6 +274,8 @@ class Dataset:
                             raise ValidationError('normalized swap differs from raw transaction')
                         index.execute('UPDATE swaps SET seen=1 WHERE id=?',(event.id,))
                 for blocker in decoded['blockers']:
+                    if blocker.get('resolution_policy') != 'OBSERVED_STATE_OR_SVM':
+                        raise Unavailable('historical normalization cannot be cleared by a liquidity patch: '+str(blocker)[:300])
                     key=(blocker['signature'],blocker.get('instruction'),blocker.get('inner_instruction'))
                     if key not in patch_keys or key not in resolved:
                         raise Unavailable('unresolved historical mutation: '+str(blocker)[:300])
@@ -251,7 +284,8 @@ class Dataset:
             if index.execute('SELECT COUNT(*) FROM swaps WHERE seen=0').fetchone()[0]:
                 raise ValidationError('normalized swap has no independently decoded raw event')
             index.close()
-            return {**base,'scope':'RAW_BLOCK_RENORMALIZATION','blocks':len(seen_slots)}
+            return {**base,'scope':'RAW_BLOCK_RENORMALIZATION','blocks':len(seen_slots),
+                    'canonical_swap_policy':'ONE_VERIFIED_SWAP2EVT_PAIR_PER_ACTUAL_INSTRUCTION'}
 
 
 def seal_descriptor(root:Path,meta:dict,output='dataset.json')->Path:

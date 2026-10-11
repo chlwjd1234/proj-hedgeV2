@@ -49,7 +49,7 @@ def print_summary(path:Path):
     print('RUN='+str(path))
     for k in ('status','scope','data_kind','historical_gate','events_validated','cases_expected','cases_pass',
               'edge_assessment','d3_eligible','economic_evidence','max_nav_residual','strategy_success',
-              'reason','workflow_completed'):
+              'reason','workflow_completed','canonical_mode','canonical_swaps','strict_canonical_pass'):
         if k in r:print(k.upper()+'='+json.dumps(r[k],ensure_ascii=False,separators=(',',':')))
     checks=r.get('checks',[])
     if checks:
@@ -208,16 +208,25 @@ def run_stage(root:Path,stage:str,cfg:dict,args)->tuple[dict,Path]:
             idl_path=root/'external/dlmm-sdk/ts-client/src/dlmm/idl/idl.json'
             idl=IdlCodec.load(idl_path) if idl_path.exists() else None
             all_rows=[];blockers=[]
+            require_canonical=bool(getattr(args,'require_canonical_swaps',False))
             for file in sorted(path.glob('*.json'),key=lambda p:int(p.stem) if p.stem.isdigit() else -1):
                 if not file.stem.isdigit():continue
                 saved=read_json(file)
-                rows=normalize_block(saved['slot'],saved['block'],{args.pool},raw_hash=saved.get('raw_sha256'),idl=idl)
+                rows=normalize_block(saved['slot'],saved['block'],{args.pool},raw_hash=saved.get('raw_sha256'),
+                                     idl=idl,require_canonical_swaps=require_canonical)
                 all_rows+=rows['events'];blockers+=rows['blockers']
-            if not all_rows:raise Unavailable('no normalized event observations')
             write_jsonl(run.path/'events.jsonl.gz',all_rows);write_json(run.path/'blockers.json',blockers)
-            result={'status':'PASS' if not blockers else 'UNAVAILABLE','scope':'EVENT_DECODE_NOT_FACTUAL_REPLAY',
+            swap_rows=[row for row in all_rows if row['kind']=='SWAP']
+            canonical_swaps=sum(row['payload'].get('canonical_pair_verified') is True for row in swap_rows)
+            strict_pass=bool(require_canonical and swap_rows and not blockers and canonical_swaps==len(swap_rows))
+            result={'status':'PASS' if all_rows and not blockers and (not require_canonical or strict_pass) else 'UNAVAILABLE',
+                    'scope':'EVENT_DECODE_NOT_FACTUAL_REPLAY',
                     'events':len(all_rows),'unresolved_mutations':len(blockers),
+                    'canonical_mode':'REQUIRED_PAIRS' if require_canonical else 'COMPATIBILITY_DIAGNOSTIC',
+                    'canonical_swaps':canonical_swaps,'strict_canonical_pass':strict_pass,
+                    'historical_gate':'UNAVAILABLE',
                     'program_binding':'UNKNOWN_UNTIL_HISTORICAL_REGISTRY_SUPPLIED','clock':'UNKNOWN_UNTIL_SYSVAR_EVIDENCE_SUPPLIED'}
+            if not all_rows:result['reason']='no normalized event observations; inspect retained blockers'
         elif stage=='seal-bundle':
             if not args.input:raise ValidationError('--input descriptor.json required')
             path=(root/args.input).resolve();meta=read_json(path)
@@ -278,6 +287,8 @@ def main(argv=None)->int:
     parser.add_argument('--pool');parser.add_argument('--start-slot',type=int);parser.add_argument('--end-slot',type=int)
     parser.add_argument('--max-blocks',type=int,default=10000)
     parser.add_argument('--max-pages',type=int,default=100)
+    parser.add_argument('--require-canonical-swaps',action='store_true',
+                        help='normalize: require one verified Swap/Swap2Evt pair per decoded swap instruction')
     parser.add_argument('--capital-ladder');parser.add_argument('--market-bundle')
     parser.add_argument('--bucket');parser.add_argument('--key');parser.add_argument('--max-bytes',type=int)
     parser.add_argument('--requester-pays',action='store_true')

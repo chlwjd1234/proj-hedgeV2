@@ -67,9 +67,12 @@ def prepare_historical(plan_path:Path,output_name='dataset.json')->dict:
                 if binding['idl_file'] not in codecs:
                     codecs[binding['idl_file']]=IdlCodec.load(safe_path(root,binding['idl_file']))
                 normalized=normalize_block(slot,saved['block'],{spec['pool']},raw_hash=saved.get('raw_sha256'),
-                         idl=codecs[binding['idl_file']],registry_entry=binding,clock_unix_timestamp=clocks[slot])
+                         idl=codecs[binding['idl_file']],registry_entry=binding,clock_unix_timestamp=clocks[slot],
+                         require_canonical_swaps=True)
                 replacement=[];replaced_outer=set()
                 for blocker in normalized['blockers']:
+                    if blocker.get('resolution_policy') != 'OBSERVED_STATE_OR_SVM':
+                        raise Unavailable('canonical normalization must be repaired before state replacement: '+str(blocker)[:350])
                     key=(blocker['signature'],blocker.get('instruction'),blocker.get('inner_instruction'))
                     if key not in transitions:
                         raise Unavailable('unresolved raw instruction: '+str(blocker)[:350])
@@ -125,4 +128,5 @@ def prepare_historical(plan_path:Path,output_name='dataset.json')->dict:
     Dataset(target)
     return {'status':'PASS','scope':'ARCHIVAL_NORMALIZATION_NOT_REPLAY_APPROVAL',
             'dataset':str(target),'segments':len(segments),'events':total,
+            'canonical_swap_policy':'ONE_VERIFIED_SWAP2EVT_PAIR_PER_ACTUAL_INSTRUCTION',
             'historical_gate':'UNAVAILABLE','next_stage':'d0'}

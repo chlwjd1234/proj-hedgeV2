@@ -1,13 +1,19 @@
 from __future__ import annotations
 import subprocess,json
 from pathlib import Path
-from .errors import Unavailable,ValidationError
+from .errors import Unavailable,Unsupported,ValidationError
 from .util import write_json,read_json,canonical,sha256
 from .model import PoolState
 from .mechanics import quote_exact_in
 
 
 def oracle(root:Path,capture_path:Path,output:Path,requests:list[dict])->dict:
+    # The current offline JS adapter invokes only swapQuote(exact input) with
+    # no host account. Extra request keys must not be silently ignored and then
+    # reported as evidence for a different swap path.
+    for request in requests:
+        if set(request) != {'amount_in', 'swap_for_y'}:
+            raise Unsupported('SDK oracle supports only amount_in/swap_for_y MM exact-in requests')
     script=root/'scripts/sdk/oracle.cjs'
     if not (root/'scripts/sdk/node_modules/@meteora-ag/dlmm').exists():
         raise Unavailable('official Node SDK not installed; run scripts/install_sdk.sh')
@@ -83,4 +89,8 @@ def oracle(root:Path,capture_path:Path,output:Path,requests:list[dict])->dict:
     if not comparisons or not bin_count:
         raise Unavailable('empty SDK parity comparison')
     return {'status':'PASS','validation_level':'SDK_PARITY','bins':bin_count,'quotes':comparisons,
+            'scope':'MM_EXACT_IN_QUOTE_AND_BIN_DECODE_ONLY',
+            'state_mutation_parity':'UNAVAILABLE',
+            'not_claimed':['LIMIT_ORDER_FILL_AND_STATE_MUTATION','EXACT_OUT','HOST_REFERRAL_FEE_SPLIT',
+                           'REWARD_PROTOCOL_BITMAP_COUNTER_MUTATION'],
             'sdk_version':'1.9.14','idl_canonical_sha256':answer['idl_canonical_sha256']}

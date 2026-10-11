@@ -200,7 +200,13 @@ def build_pool_state(pool: str, pair: dict, arrays: list[dict], *, slot: int,
                       variable=VariableState(**pair['variable']), bins=bins,
                       decimals_x=dx, decimals_y=dy, slot=slot, **scalar,
                       known_bin_arrays=sorted(a['index'] for a in arrays),
-                      complete_bin_map=complete_bin_map, data_kind=data_kind)
+                      complete_bin_map=complete_bin_map, data_kind=data_kind,
+                      reward_mints=(tuple(r['mint'] for r in pair['rewards'])
+                                    if pair.get('rewards') is not None else None),
+                      protocol_fee_x=pair.get('protocol_fee_x'),
+                      protocol_fee_y=pair.get('protocol_fee_y'),
+                      bin_array_bitmap=pair.get('bin_array_bitmap'),
+                      last_updated_at=pair.get('last_updated_at'))
     state.validate()
     return state
 
