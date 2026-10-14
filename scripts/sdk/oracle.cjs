@@ -80,13 +80,42 @@ async function main() {
       if (bytes.subarray(0,8).equals(binDisc)) arrays.push({publicKey:new PublicKey(address),account:dlmm.program.coder.accounts.decode('binArray',bytes)});
     }
     const outputs=[];
-    for (const q of requests) {
-      const out=dlmm.swapQuote(new BN(q.amount_in),q.swap_for_y,new BN(0),arrays,false);
-      outputs.push({amount_in:q.amount_in,swap_for_y:q.swap_for_y,quote:normalize(out)});
+    const amount = (value, name) => {
+      if (typeof value === 'number' && Number.isSafeInteger(value)) value=String(value);
+      if (typeof value !== 'string' || !/^[0-9]{1,20}$/.test(value))
+        throw new Error('invalid integer wire amount '+name);
+      const result=new BN(value,10);
+      if (result.gt(new BN('18446744073709551615'))) throw new Error('u64 overflow '+name);
+      if (name!=='min_amount_out' && result.isZero()) throw new Error('zero-size swap constraint '+name);
+      return result;
+    };
+    for (const [requestIndex,q] of requests.entries()) {
+      if (typeof q.swap_for_y !== 'boolean') throw new Error('swap direction must be boolean');
+      const typed=Object.prototype.hasOwnProperty.call(q,'mode');
+      if (typed && q.host_fee_present !== false)
+        throw new Error('UNAVAILABLE: pinned SDK quote has no host-account argument');
+      const expectedKeys=typed
+        ? (q.mode==='EXACT_IN'
+            ? ['mode','swap_for_y','host_fee_present','amount_in','min_amount_out']
+            : q.mode==='EXACT_OUT'
+              ? ['mode','swap_for_y','host_fee_present','out_amount','max_in_amount'] : [])
+        : ['amount_in','swap_for_y'];
+      if (Object.keys(q).sort().join(',')!==expectedKeys.sort().join(','))
+        throw new Error('unsupported or incomplete quote request');
+      const out=(typed && q.mode==='EXACT_OUT')
+        ? dlmm.swapQuoteExactOut(amount(q.out_amount,'out_amount'),q.swap_for_y,new BN(0),arrays)
+        : dlmm.swapQuote(amount(q.amount_in,'amount_in'),q.swap_for_y,new BN(0),arrays,false);
+      if (typed && q.mode==='EXACT_OUT' && out.inAmount.gt(amount(q.max_in_amount,'max_in_amount')))
+        throw new Error('SDK quote violates actual maximum input constraint');
+      if (typed && q.mode==='EXACT_IN' && out.outAmount.lt(amount(q.min_amount_out,'min_amount_out')))
+        throw new Error('SDK quote violates actual minimum output constraint');
+      outputs.push({request_index:requestIndex,request:q,quote:normalize(out)});
     }
     const npmIdlHash=crypto.createHash('sha256').update(JSON.stringify(normalize(pkg.IDL))).digest('hex');
     console.log(JSON.stringify({status:'PASS',sdk_version:installed.version,idl_canonical_sha256:npmIdlHash,
        pair:normalize(dlmm.lbPair),bin_arrays:arrays.map(x=>({public_key:x.publicKey.toBase58(),account:normalize(x.account)})),
+       bitmap_extension:normalize(dlmm.binArrayBitmapExtension),
+       token_mints:{x:normalize(dlmm.tokenX.mint),y:normalize(dlmm.tokenY.mint)},
        quotes:outputs,clock:normalize(dlmm.clock),scope:'OFFICIAL_SDK_ON_EXACT_FROZEN_ACCOUNT_BYTES'}));
   } finally {Date.now=oldNow;}
 }

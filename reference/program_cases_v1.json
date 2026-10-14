@@ -1,0 +1,749 @@
+{
+  "case_archive": "tests/fixtures/dlmm_program_cases_v1.json.gz",
+  "case_archive_sha256": "75488911ff273564d1c223ad8ac090442ec9060bad01aa5a042bdf5011b4df2a",
+  "case_count": 141,
+  "case_json_sha256": "bb3fc90f25f6673a62d9db5f836ea1252e35a1c0deb80ab79a44a2b23f288254",
+  "case_source_index": {
+    "base0_vc0_cross": {
+      "original_file": "edge_timestamp_guard/captures/base0_vc0_cross.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "9d88085937681c8506950cafd2dd2820d4381160ea4037f7885d89dc7c8f20e8"
+    },
+    "base0_vc0_same_bin": {
+      "original_file": "edge_timestamp_guard/captures/base0_vc0_same_bin.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "fc8fc21d3a409d0a0b9679f62c6cc0423fc1dd440cbcb628d1b6556ad6844d68"
+    },
+    "base0_vc50000_cross": {
+      "original_file": "edge_timestamp_guard/captures/base0_vc50000_cross.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "2b9508ada1ae839c271ddb262c48fecb9d34f39ef387f39a2995db762478b6fd"
+    },
+    "base0_vc50000_same_bin": {
+      "original_file": "edge_timestamp_guard/captures/base0_vc50000_same_bin.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "8edb09fbe64ddca22542e51db293ceb0ad6390431d9ef0b20819447c1fc30fa1"
+    },
+    "base10000_vc0_cross": {
+      "original_file": "edge_timestamp_guard/captures/base10000_vc0_cross.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "83f1a718be09f67242c94b047f2de4c6e097981a2464b00c60a2b638d516979f"
+    },
+    "base10000_vc0_same_bin": {
+      "original_file": "edge_timestamp_guard/captures/base10000_vc0_same_bin.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "913b660427f0216603a804bcc3f1ebb124b50c86aa439c406402a5505e4ed0b4"
+    },
+    "base10000_vc50000_cross": {
+      "original_file": "edge_timestamp_guard/captures/base10000_vc50000_cross.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "461717a0e96b3636613fbefbe88f0bc800a90f4ecf93c610e1eeed62d17c7ed6"
+    },
+    "base10000_vc50000_same_bin": {
+      "original_file": "edge_timestamp_guard/captures/base10000_vc50000_same_bin.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "d454e32538e3fe9a486a5df6cb0e7d7eae449f2c8e27e262a0945cca1de354d3"
+    },
+    "bitmap_after_empty_array_probe": {
+      "original_file": "captures/bitmap_after_empty_array_probe.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "27fbfef384710f0c44581591f10c459f5483dbc0d79da7e88ac2d2bb8d80876f"
+    },
+    "bitmap_only_lo_full_exhaust": {
+      "original_file": "captures/bitmap_only_lo_full_exhaust.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c33e1c9bbd52cbfbd3394bf79055efa3f2709c07d9520d246f0ae58a120dfc30"
+    },
+    "bitmap_only_lo_place": {
+      "original_file": "captures/bitmap_only_lo_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "9e6f07970ec166f639c43e3a7b8e545e99da351db8d6b8379e310c3691fe14bf"
+    },
+    "cross_saturated_volatility": {
+      "original_file": "edge_timestamp_guard/captures/cross_saturated_volatility.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "2c01ff8c8fd33636fe3a4ee1decc79498f1bef3c0cab5a7c07946cfe8b50cf66"
+    },
+    "cross_zero_max_volatility": {
+      "original_file": "edge_timestamp_guard/captures/cross_zero_max_volatility.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "055acae19cb1a012d089b6707ba3e5824ade5aa876316a33bf5147eb81f932f2"
+    },
+    "dust_exactout_hostoff_m0_out1": {
+      "original_file": "captures/dust_exactout_hostoff_m0_out1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "13dd96b4443d7c88dfb070ffcb6f4b88340d8607076fc60c13dbfbba599affe6"
+    },
+    "dust_exactout_hostoff_m0_out10": {
+      "original_file": "captures/dust_exactout_hostoff_m0_out10.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "f383bceab8e4f57dbe77671a5d51fa62f3dd5737aa8a029b5c791181e79b0343"
+    },
+    "dust_exactout_hostoff_m0_out11": {
+      "original_file": "captures/dust_exactout_hostoff_m0_out11.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c1924830420f5923ecb2eb2a6dc8c9d4f0393363b38408aaff80085133652d21"
+    },
+    "dust_exactout_hostoff_m0_out9": {
+      "original_file": "captures/dust_exactout_hostoff_m0_out9.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "dce6649cb2d00c05ff66e22ec035a24b522ee093476cd567f1b5d9c72b92d972"
+    },
+    "dust_exactout_hostoff_m1_out1": {
+      "original_file": "captures/dust_exactout_hostoff_m1_out1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c3988d1ecf3558e0ac2396aa73a2579192a6a8d71406b0370c5f95b2f6314866"
+    },
+    "dust_exactout_hostoff_m1_out10": {
+      "original_file": "captures/dust_exactout_hostoff_m1_out10.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "974c8b481dab06d8371a18380c8a751650fa2a9010cd4c2e72898d9160714ba5"
+    },
+    "dust_exactout_hostoff_m1_out11": {
+      "original_file": "captures/dust_exactout_hostoff_m1_out11.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "210fece5e4da3bcc14cf07e550690c2b80dac5a6e1bce080ab1a041da2b313fc"
+    },
+    "dust_exactout_hostoff_m1_out9": {
+      "original_file": "captures/dust_exactout_hostoff_m1_out9.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "f18bd24d41a5e412d4be51faf6f8828da92651c279d4aa9f3863ede164f96bc6"
+    },
+    "dust_exactout_m0_out1": {
+      "original_file": "captures/dust_exactout_m0_out1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "9576dab54347ea77777b574a45980c93ebc6f5ca25b2b15799b620fd6305287f"
+    },
+    "dust_exactout_m0_out10": {
+      "original_file": "captures/dust_exactout_m0_out10.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "0603a69f86bdae98438e883cb77c5829065bfb7673cd9bf6067b202b7e7dfae5"
+    },
+    "dust_exactout_m0_out11": {
+      "original_file": "captures/dust_exactout_m0_out11.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "030ae8b1ce8db93f13fe8184449e8dd3ec4b3c3c8df40484fca8f777f44c924c"
+    },
+    "dust_exactout_m0_out9": {
+      "original_file": "captures/dust_exactout_m0_out9.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c3495aba40c32155cc22acfa048c474740bd7abd4a467ef7ac147a43e7129d70"
+    },
+    "dust_exactout_m1_out1": {
+      "original_file": "captures/dust_exactout_m1_out1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "98f2dd81800874e00e2492f2e668d3ec6dac9721b3500e28eb5823b5e8c4baeb"
+    },
+    "dust_exactout_m1_out10": {
+      "original_file": "captures/dust_exactout_m1_out10.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "3ab77f8aa4c9ae7a9c9e1f6ebcb164bfc8d8d86e019a87c4233ccc13c82d46b1"
+    },
+    "dust_exactout_m1_out11": {
+      "original_file": "captures/dust_exactout_m1_out11.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c98313a6c1384beb242780b894ed17d64ccdb5137d9a804bbe4779bc1f1334a8"
+    },
+    "dust_exactout_m1_out9": {
+      "original_file": "captures/dust_exactout_m1_out9.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "a1f1a59ad85a60ce6c342bc124679927669dad4f84bdb56ffcf3bd44137236d4"
+    },
+    "edge_bps10000_m0_yx_h0_swap_with_price_impact": {
+      "original_file": "captures/edge_bps10000_m0_yx_h0_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "cb1d1dff6042b93321bcd88fa871fcf12c0f8d71b5a94b9aa7b3dcd9b6645113"
+    },
+    "edge_bps10000_m0_yx_h0_swap_with_price_impact2": {
+      "original_file": "captures/edge_bps10000_m0_yx_h0_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "1e13ef6974bac81feba527f0bcfab66fbf4632fd5839ea01bb71f6915bb2ed76"
+    },
+    "edge_bps10000_m0_yx_h1_swap_with_price_impact": {
+      "original_file": "captures/edge_bps10000_m0_yx_h1_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "3de259cdfda57f2ca707514405b5e267e7a7c67bbd977e6808d5c8f954b6c877"
+    },
+    "edge_bps10000_m0_yx_h1_swap_with_price_impact2": {
+      "original_file": "captures/edge_bps10000_m0_yx_h1_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "82d9398e6d2bd06334e866b7f42b1fa51ecedba3604ed35f95bddd605dfcd2e4"
+    },
+    "edge_bps10000_m1_yx_h0_swap_with_price_impact": {
+      "original_file": "captures/edge_bps10000_m1_yx_h0_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "5a834c1faea9f36405482c0777173ff6a4724475ce0fce98ead82e65fd85d9be"
+    },
+    "edge_bps10000_m1_yx_h0_swap_with_price_impact2": {
+      "original_file": "captures/edge_bps10000_m1_yx_h0_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "870db833fcba8668b2381b2a5cf6fa0b341756773d3813fac69a2144f6f45dff"
+    },
+    "edge_bps10000_m1_yx_h1_swap_with_price_impact": {
+      "original_file": "captures/edge_bps10000_m1_yx_h1_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "3d8ee2c00f2f82efbc4283250208810f416ca3c515ed041f9e00517b4591eee6"
+    },
+    "edge_bps10000_m1_yx_h1_swap_with_price_impact2": {
+      "original_file": "captures/edge_bps10000_m1_yx_h1_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "fd8fb6e465251002b7bfc1558c631c825141b3e80cf90d8e94e46929bdd0642c"
+    },
+    "empty_bin_price_xy": {
+      "original_file": "captures/empty_bin_price_xy.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "92ca056de653ffcc85334253681890d9d3d72cfce9e5f5ae0edb498fafaad82f"
+    },
+    "empty_bin_price_yx": {
+      "original_file": "captures/empty_bin_price_yx.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "b7f96944fafdfbcf465c843013e56c44c5cff0759a80a2004a5e58cac833827a"
+    },
+    "m0_xy_h0_swap": {
+      "original_file": "captures/m0_xy_h0_swap.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "b2b8a2bbe1c3be8181d79d4087096c2bbca7b5eb4a46958e7059796f73df638a"
+    },
+    "m0_xy_h0_swap2": {
+      "original_file": "captures/m0_xy_h0_swap2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "5b704247b75d7b810bbd3992000558f6e265fa6f349bfc7820f1b93b9ab160d8"
+    },
+    "m0_xy_h0_swap_exact_out": {
+      "original_file": "captures/m0_xy_h0_swap_exact_out.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "ba9106940313112fbf82d4b6069eac26a69dd0da770b37275d33829802b90086"
+    },
+    "m0_xy_h0_swap_exact_out2": {
+      "original_file": "captures/m0_xy_h0_swap_exact_out2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "e0be9d5143207a6e9ed9aac1ee9aaf5eba766ab4ed15b2ecc0e942133eb51486"
+    },
+    "m0_xy_h0_swap_with_price_impact": {
+      "original_file": "captures/m0_xy_h0_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "f6c129a668e0badec3c1367b0311b5170da779e7510b00e652a59007debe5698"
+    },
+    "m0_xy_h0_swap_with_price_impact2": {
+      "original_file": "captures/m0_xy_h0_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "333fe277bd62594e73d105e410657ca62831ba221e034cdb8c6d9ef6ebc891aa"
+    },
+    "m0_xy_h1_swap": {
+      "original_file": "captures/m0_xy_h1_swap.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "8d9a083afb16d4a5eeb6b3cc5791450ab479bc86c77e1a12cfd1395bb936a689"
+    },
+    "m0_xy_h1_swap2": {
+      "original_file": "captures/m0_xy_h1_swap2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "acccd984395ec48d3917c3937cbcc73e72a02b1c41395a8da267ed9cf86b84b6"
+    },
+    "m0_xy_h1_swap_exact_out": {
+      "original_file": "captures/m0_xy_h1_swap_exact_out.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "4fa37c72ecf622dd777156b85b82326296298a4622ef0e97f539116d5e5ceb9b"
+    },
+    "m0_xy_h1_swap_exact_out2": {
+      "original_file": "captures/m0_xy_h1_swap_exact_out2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "6a6004a28a5052dd93d8f4f0491673a748941b3aa6af6565a553986438de71f6"
+    },
+    "m0_xy_h1_swap_with_price_impact": {
+      "original_file": "captures/m0_xy_h1_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "097bdaf4b69f1859d628c5bfff0bc2451a8a0b72d846bcf42ea1ce4903ae8d57"
+    },
+    "m0_xy_h1_swap_with_price_impact2": {
+      "original_file": "captures/m0_xy_h1_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "4b008e5f2683c66b33f22d2ae8114c95afe951d0257a664449dc7eb85ea9b990"
+    },
+    "m0_yx_h0_swap": {
+      "original_file": "captures/m0_yx_h0_swap.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "45cbada5515829eaad9eeb5613bbed5034aaf8d9db627e888e7dfd9360094021"
+    },
+    "m0_yx_h0_swap2": {
+      "original_file": "captures/m0_yx_h0_swap2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "4498bca8ac90be0989dd8527152f489ab429a17ae18a8e83075cfb5760fd7155"
+    },
+    "m0_yx_h0_swap_exact_out": {
+      "original_file": "captures/m0_yx_h0_swap_exact_out.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "a39379505122ba98629e69abd1e40ac23849d079d363d8af63f0881e3cdcaaf2"
+    },
+    "m0_yx_h0_swap_exact_out2": {
+      "original_file": "captures/m0_yx_h0_swap_exact_out2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "606fda9cb4870aa45c99c402a66b7f3c76c7517c0202b30df05d24d14b668255"
+    },
+    "m0_yx_h0_swap_with_price_impact": {
+      "original_file": "captures/m0_yx_h0_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "aed0180df5b894411e224fcb59a1e74fe36acf584847ffc403898fa76115105c"
+    },
+    "m0_yx_h0_swap_with_price_impact2": {
+      "original_file": "captures/m0_yx_h0_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "b8d831111e3b3e858fad769a0ef7e29546e36992065be33772e96b3be966dec6"
+    },
+    "m0_yx_h1_swap": {
+      "original_file": "captures/m0_yx_h1_swap.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "e6abf1efd1cd83fb5d8d61d3edaff91320de605c9af9c82de34f5ccfe9b0780c"
+    },
+    "m0_yx_h1_swap2": {
+      "original_file": "captures/m0_yx_h1_swap2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "b07fcbecbaee18851ae6240d4a0980d12619518bfc7f75d064c02d593eff0b16"
+    },
+    "m0_yx_h1_swap_exact_out": {
+      "original_file": "captures/m0_yx_h1_swap_exact_out.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "d67e41740048e4b924075b7be5d9a4f6851f38f992cc7146653d9dd3fa9060ab"
+    },
+    "m0_yx_h1_swap_exact_out2": {
+      "original_file": "captures/m0_yx_h1_swap_exact_out2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "d5229f0d09991ea22c20b52dea46edede1ddf8c7f4942291211d9d7f4e365596"
+    },
+    "m0_yx_h1_swap_with_price_impact": {
+      "original_file": "captures/m0_yx_h1_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "96d2e2bd4525a5fac90ff995631612075722afee2ef28ed319c76c07eea3dc13"
+    },
+    "m0_yx_h1_swap_with_price_impact2": {
+      "original_file": "captures/m0_yx_h1_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c8da37dd6ba997ecca20822cdd9a672629fdf1b30510401edd71126a72cab291"
+    },
+    "m1_xy_h0_swap": {
+      "original_file": "captures/m1_xy_h0_swap.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "0036e0ad852735eee839dc076d356113bcd5ffed21a76d3fe0aee032f200a06c"
+    },
+    "m1_xy_h0_swap2": {
+      "original_file": "captures/m1_xy_h0_swap2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "513601c540f364fd4e915ebe01aa9c8cb7ba45f6320717c3571f069c1ec804f3"
+    },
+    "m1_xy_h0_swap_exact_out": {
+      "original_file": "captures/m1_xy_h0_swap_exact_out.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c767e989740cb107b983536dc687c5b6528ee7aa90bf0a7a84afae500570f5e3"
+    },
+    "m1_xy_h0_swap_exact_out2": {
+      "original_file": "captures/m1_xy_h0_swap_exact_out2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "dd7fb28e1eeba301db9917257998d83c1491f118bcf9401f9fb7e72572112dd7"
+    },
+    "m1_xy_h0_swap_with_price_impact": {
+      "original_file": "captures/m1_xy_h0_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "8ace18556c8a708808a5b368425936e689707ebbb1d140f61be1b20740e3879e"
+    },
+    "m1_xy_h0_swap_with_price_impact2": {
+      "original_file": "captures/m1_xy_h0_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "d4b1a6e566ed2a371344ce6f46cf766fcaf4ebfce2a5e5482dd5881b68fd5ce2"
+    },
+    "m1_xy_h1_swap": {
+      "original_file": "captures/m1_xy_h1_swap.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "919f9b18f4b0a3b4a7111d44e62c800dbf0295f1581f18540a905d6724f87ebc"
+    },
+    "m1_xy_h1_swap2": {
+      "original_file": "captures/m1_xy_h1_swap2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "0f2a99c95ea08f7a1710a47c8ec8c32b6a8479965b1ffb7c89490716a263bcb6"
+    },
+    "m1_xy_h1_swap_exact_out": {
+      "original_file": "captures/m1_xy_h1_swap_exact_out.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "0b805cf57d2d2eef559587603a89215c55f2cbe1ed454575287f8ec3883ca968"
+    },
+    "m1_xy_h1_swap_exact_out2": {
+      "original_file": "captures/m1_xy_h1_swap_exact_out2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "6220544f8c29342723c54dce885591ffcda21eff9256f120fd95f3473b1970a5"
+    },
+    "m1_xy_h1_swap_with_price_impact": {
+      "original_file": "captures/m1_xy_h1_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "34d4df6a5493561697658ce118e2842e739a0d7c194edcfb6fbc5706225e35ed"
+    },
+    "m1_xy_h1_swap_with_price_impact2": {
+      "original_file": "captures/m1_xy_h1_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "42d52658acc74d0ede6e3d3d94a727d5f889de6e558d6340debe20b3fd7db47a"
+    },
+    "m1_yx_h0_swap": {
+      "original_file": "captures/m1_yx_h0_swap.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "329a5c5bd0aaf2df40bfba3612104d36a1528bdbffc360f1cdf955a852fac39e"
+    },
+    "m1_yx_h0_swap2": {
+      "original_file": "captures/m1_yx_h0_swap2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "873b1407fc336e1128544c1d8c7cf2c7943190d0bdc3c07dee7a2a3274042b6c"
+    },
+    "m1_yx_h0_swap_exact_out": {
+      "original_file": "captures/m1_yx_h0_swap_exact_out.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "b9a466cb84b47db38de0e4a6c7922e268079551a70b7e5443190eb846c586ae2"
+    },
+    "m1_yx_h0_swap_exact_out2": {
+      "original_file": "captures/m1_yx_h0_swap_exact_out2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "6024e365a1a753a8f8efabdaa0d0a0e6743e3902ee83748cea58eadf05d5bdaf"
+    },
+    "m1_yx_h0_swap_with_price_impact": {
+      "original_file": "captures/m1_yx_h0_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "013a39ea286614b7363d7038435ca220cac28f1af55cf9d5272c29dc8e507c51"
+    },
+    "m1_yx_h0_swap_with_price_impact2": {
+      "original_file": "captures/m1_yx_h0_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "cc207ce8df253f47fddd20f27b0d2255c2f562f2bcde3133d3b063be322099ce"
+    },
+    "m1_yx_h1_swap": {
+      "original_file": "captures/m1_yx_h1_swap.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "fdfbe4f71fd78567eacf555b960e254edeb492d2ef00999f423e11b3f5024f50"
+    },
+    "m1_yx_h1_swap2": {
+      "original_file": "captures/m1_yx_h1_swap2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "f836b231143873bfa85555cdd5dc264f3232d25a5c1aa115bd6f5ea2d92e13e8"
+    },
+    "m1_yx_h1_swap_exact_out": {
+      "original_file": "captures/m1_yx_h1_swap_exact_out.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "fad976b7840e93d7cdbce4b9f4c4b53a8bb7a3aa0931964320df5a5add4b1dce"
+    },
+    "m1_yx_h1_swap_exact_out2": {
+      "original_file": "captures/m1_yx_h1_swap_exact_out2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "5d1f839e0e3f9841ba2dec760b2567ec0cd4aec8b7f643b9732f7ca46a295072"
+    },
+    "m1_yx_h1_swap_with_price_impact": {
+      "original_file": "captures/m1_yx_h1_swap_with_price_impact.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "fe50086fcd2b3c5b71061ceab69b7b71ba03ef877e1f09bde49bd7563a76636e"
+    },
+    "m1_yx_h1_swap_with_price_impact2": {
+      "original_file": "captures/m1_yx_h1_swap_with_price_impact2.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "0317288c626d9b953170f2c09256419bcc4cea11dc3aeb551a1783f482c45cc8"
+    },
+    "one_input_m0": {
+      "original_file": "captures/one_input_m0.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "726760594a325e74cdc7506b9831d511fe830f72a025fe9989b9fb371ca93982"
+    },
+    "one_input_m1": {
+      "original_file": "captures/one_input_m1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "651bf04d8ce1410205fb56ee16f15bdd6abe9c98b9c68f407518733a32515d1d"
+    },
+    "principal_dust_m0": {
+      "original_file": "captures/principal_dust_m0.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c2c91558f755b58116d30de5d282fe2adeee4b85d757cee2d0616be01031a3fc"
+    },
+    "principal_dust_m1": {
+      "original_file": "captures/principal_dust_m1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "a306e9ce4be122d61758c522f60f726ae92cfd96312bccd6c240f28ea45bd289"
+    },
+    "reject_exact_out_max_input": {
+      "original_file": "captures/reject_exact_out_max_input.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "cad8d92aaf0c6ddbef725043c9e2d69f5f147d88273d6f248384110ab21418aa"
+    },
+    "reject_price_impact_zero": {
+      "original_file": "captures/reject_price_impact_zero.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "53846df7ed208f9c08cbc3c7139954f49750c5c1d81ac654c5be473a0761f513"
+    },
+    "reject_wrong_host_mint": {
+      "original_file": "captures/reject_wrong_host_mint.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "6a06f2a670582173735bd6b740aa4bc4e5068d3fc513c9469f0b0d94d9b32105"
+    },
+    "same_bin_high_frequency_volatility_changes": {
+      "original_file": "edge_timestamp_guard/captures/same_bin_high_frequency_volatility_changes.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "547308fb20f7b341284e4107328b521b139fa2644b8efc76fefa6ecc2e55423a"
+    },
+    "same_bin_reference_decay": {
+      "original_file": "edge_timestamp_guard/captures/same_bin_reference_decay.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "e61e5b704ef532b859ab4c869bb367d37b8550a5d89ef8f6041d387479ad2f3a"
+    },
+    "same_bin_reference_filter_window": {
+      "original_file": "edge_timestamp_guard/captures/same_bin_reference_filter_window.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "fed4de5b840b576be3715029e0cf6298aab1f6674508e51c253820ff1a97fb89"
+    },
+    "smoke_x_y_exact_in": {
+      "original_file": "captures/smoke_x_y_exact_in.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "1c37e603f90ae277379db1b9c7a2ba50c2abd0a5660510635f221d6bb557e8b4"
+    },
+    "xy_cohort_matrix_place": {
+      "original_file": "captures/xy_cohort_matrix_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "93909db0840e54cedb0967c697f3bd8f1f2e78841013aa5e6c43e7b747fee945"
+    },
+    "xy_cohort_matrix_prepare": {
+      "original_file": "captures/xy_cohort_matrix_prepare.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "3e9521d10c1b1a659d7461ac77a81c7d6c48100e55c6f9d2e34ff44f2bea0f9c"
+    },
+    "xy_cohort_matrix_processed_and_open": {
+      "original_file": "captures/xy_cohort_matrix_processed_and_open.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "15e64b5bbd2890bcbde7e8823e8bfc9deb2c1d589ceadcba25e9b1a4ded7fd62"
+    },
+    "xy_cohort_matrix_processed_only": {
+      "original_file": "captures/xy_cohort_matrix_processed_only.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "af5fe1eec199fe9700c9f1d69c47a04483d9fdbafc32d2cef94cfeb3f9d72521"
+    },
+    "xy_cohort_prepare": {
+      "original_file": "captures/xy_cohort_prepare.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "e485b43ce5da4daf76a91e1ba7dd40c346eac6791ae070427eff85ec73493596"
+    },
+    "xy_mm10_open_remainder_0": {
+      "original_file": "edge_zero_output_lo/captures/xy_mm10_open_remainder_0.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "2239231776a84e7639de3877a5ae4d4695911c84c61e67f61a26c852b74dabc7"
+    },
+    "xy_mm10_open_remainder_0_place": {
+      "original_file": "edge_zero_output_lo/captures/xy_mm10_open_remainder_0_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "4b4827b77f1ebe26ac2d0b2c3a0f619509a1b4c609267941494b3e907f4b8771"
+    },
+    "xy_mm10_open_remainder_1": {
+      "original_file": "edge_zero_output_lo/captures/xy_mm10_open_remainder_1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "80bf5cc1ffcc99f70894c29425f461ffc458a7873a0956934cc6596bb1941e76"
+    },
+    "xy_mm10_open_remainder_10": {
+      "original_file": "edge_zero_output_lo/captures/xy_mm10_open_remainder_10.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "aa7b96b054a0c4e1d1331f1b90e124c5268c2ef40284a8d7eb89559df0199a4a"
+    },
+    "xy_mm10_open_remainder_10_place": {
+      "original_file": "edge_zero_output_lo/captures/xy_mm10_open_remainder_10_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "d40f7adedcabbe18d02fa105f00739d0f8314ac59ffeb865979c6cb693d7432b"
+    },
+    "xy_mm10_open_remainder_11": {
+      "original_file": "edge_zero_output_lo/captures/xy_mm10_open_remainder_11.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "b9463b5d87612944495e6353020a4f79bd19a1b34db4959cc5619606117a19a7"
+    },
+    "xy_mm10_open_remainder_11_place": {
+      "original_file": "edge_zero_output_lo/captures/xy_mm10_open_remainder_11_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "702b3dbe120602fcd74c5b7c400b1d14a2f2408c0a95a8b81ff0c2c6f7fa4ea1"
+    },
+    "xy_mm10_open_remainder_1_place": {
+      "original_file": "edge_zero_output_lo/captures/xy_mm10_open_remainder_1_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "6f76c810a5d2f871a3003ded03cedc6d0ca143b16fc30cf41a10d53f2ce1f390"
+    },
+    "xy_new_open_real_place": {
+      "original_file": "captures/xy_new_open_real_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "94b4a51d7dd4938fb093bf9b0ae809c17623c7a5a8fa6d95bf6c3a7b27a34b7f"
+    },
+    "xy_new_open_second_real_place": {
+      "original_file": "captures/xy_new_open_second_real_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "f0be56cc24337e94db3f0954a91e7e49c43d6b0d5129e714e1840417b683f02c"
+    },
+    "xy_open_exhaust_in_one_tx": {
+      "original_file": "captures/xy_open_exhaust_in_one_tx.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "6e881167ce7a15da35d6fae3315a3d146de720f7c33963d7e8dfaeae4cd3de3c"
+    },
+    "xy_open_partial": {
+      "original_file": "captures/xy_open_partial.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "3d5037cf81246da816a9b47e495b55ccf334a4ec00ac5474932ac3c37271e67f"
+    },
+    "xy_processed_exhaust_cross": {
+      "original_file": "captures/xy_processed_exhaust_cross.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "a10685525c6df595414e51f3778fe8716d5a0b1533bbde4e98bdd56e8d506a77"
+    },
+    "xy_processed_partial": {
+      "original_file": "captures/xy_processed_partial.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "12336d786401add691a0339ffe5a5eb1b5d19eaa5364f293a08901dc6e065ed7"
+    },
+    "xy_processed_then_open": {
+      "original_file": "captures/xy_processed_then_open.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "3ed92bf0d1090d5a16c03daea7b19da025bf93af9648b12ec80a88e19a5225b2"
+    },
+    "xy_second_rollover": {
+      "original_file": "captures/xy_second_rollover.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "ef22157896ad76a23bf6a6dbc672fd74c3bdcad5515ddae250544b5a4e31f617"
+    },
+    "yx_cohort_matrix_place": {
+      "original_file": "captures/yx_cohort_matrix_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "fdbf880cbac76ca46a7dfa65eda7b6e0d5108819e7ae466b66c8488f733e1410"
+    },
+    "yx_cohort_matrix_prepare": {
+      "original_file": "captures/yx_cohort_matrix_prepare.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "2c29c34752a2caf634689ada9666160f2759b69f8378015e35eba5a9afd5f196"
+    },
+    "yx_cohort_matrix_processed_and_open": {
+      "original_file": "captures/yx_cohort_matrix_processed_and_open.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "eb813e913adf5204546bad1bd7f1778f248a8ff1724ca1072f9ab0cf3f769769"
+    },
+    "yx_cohort_matrix_processed_only": {
+      "original_file": "captures/yx_cohort_matrix_processed_only.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "8fd2d71ea24a84d9bc32e10dd5125f9fcde76a850456306807dba0d40e2ad13f"
+    },
+    "yx_mm10_open_remainder_0": {
+      "original_file": "edge_zero_output_lo/captures/yx_mm10_open_remainder_0.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "bf74179f05e41e84f93e0069b146ab4c59842bf862b94f55211188679a2b8590"
+    },
+    "yx_mm10_open_remainder_0_place": {
+      "original_file": "edge_zero_output_lo/captures/yx_mm10_open_remainder_0_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "3a2c97c21f0f52128af53c543a9124330a705d9731f49594d05dd1e838b883ce"
+    },
+    "yx_mm10_open_remainder_1": {
+      "original_file": "edge_zero_output_lo/captures/yx_mm10_open_remainder_1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c0ca048778eaf0b222127dd9e896f2167cfc6687cf740af2bf28cb17e5f85053"
+    },
+    "yx_mm10_open_remainder_10": {
+      "original_file": "edge_zero_output_lo/captures/yx_mm10_open_remainder_10.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c8d1a7202d5cec09ee75eec0ec7821f019f98de184866fb6482d6525669c76af"
+    },
+    "yx_mm10_open_remainder_10_place": {
+      "original_file": "edge_zero_output_lo/captures/yx_mm10_open_remainder_10_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "b7659f20dd3bc17c473db9eff3010f079c691b3727ed9afa0f0b2158b28a7226"
+    },
+    "yx_mm10_open_remainder_1_place": {
+      "original_file": "edge_zero_output_lo/captures/yx_mm10_open_remainder_1_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "58f4f48488f7faa9f1b5fb4849f5d9e79ecba00995939cdc8a363d5bee8a7dae"
+    },
+    "yx_mm10_open_remainder_9": {
+      "original_file": "edge_zero_output_lo/captures/yx_mm10_open_remainder_9.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "c57bab8945e01dc58640bb163af73b4e4c986ff456acff3828636d15315d0f77"
+    },
+    "yx_mm10_open_remainder_9_place": {
+      "original_file": "edge_zero_output_lo/captures/yx_mm10_open_remainder_9_place.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "d5932a7043487a7aec878a746c32641981789e8c6ef2e4d26ef8aa5d7c2410cb"
+    },
+    "yx_open_exhaust_in_one_tx": {
+      "original_file": "captures/yx_open_exhaust_in_one_tx.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "9c2370875fa1f6e0ef226cee67969c91640bf19783b2e787373122fec3c3b2f9"
+    },
+    "yx_open_partial": {
+      "original_file": "captures/yx_open_partial.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "6ef8794e3f35e4c8fe08d1795a560088f639f197941c6f73e8ca66abae6a85dd"
+    },
+    "yx_processed_exhaust_cross": {
+      "original_file": "captures/yx_processed_exhaust_cross.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "52410e88293ceda3447522073b4a6ddb2467869507d5bdb1d0e47e35380dce36"
+    },
+    "yx_processed_partial": {
+      "original_file": "captures/yx_processed_partial.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "b9febe8d901e1cbd25fe33120255b5b500f0d70c9c1c63e44aebb1058e089852"
+    },
+    "zero_input_m0": {
+      "original_file": "captures/zero_input_m0.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "d1cf075d0978c7ec28f1a3f517c0fd22e754bd07f13fecff5c6972aab7f2df96"
+    },
+    "zero_input_m1": {
+      "original_file": "captures/zero_input_m1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "93f4d2664f677d821a17804b2d673ca1f77d90a8996182b83c63ca35fc12e330"
+    },
+    "zero_output_m0": {
+      "original_file": "captures/zero_output_m0.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "ff6709ed93d745283fdfebdbd40bd7c7a7ec24fd68ce17ac86194b8344c4b16b"
+    },
+    "zero_output_m1": {
+      "original_file": "captures/zero_output_m1.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "2e49a5c22a844e82109f4dd7714c7edc5900b3b6602bec7c8bdaa38618199398"
+    },
+    "zero_price_nonempty_bin_xy": {
+      "original_file": "captures/zero_price_nonempty_bin_xy.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "4f4b766aa3833fe7fd8b17202ebcc9bef8e7c5e98b3790c60d1efd99600ca1a3"
+    },
+    "zero_price_nonempty_bin_yx": {
+      "original_file": "captures/zero_price_nonempty_bin_yx.json",
+      "serialization": "json.dumps(indent=2,sort_keys=True)+newline",
+      "sha256": "4db8978f49a9f90e2182dd6448051305a7026102f8091316f5b54907bcd3b5e4"
+    }
+  },
+  "data_kind": "SYNTHETIC",
+  "execution_counts": {
+    "ERROR": 21,
+    "EXECUTED": 120
+  },
+  "historical_prestate_validated": false,
+  "historical_runtime_feature_parity": "UNVERIFIED",
+  "idl_sha256": "045c0f4af044be046b6a14b350077e4242e8ac026b64a855803dab30fcdd8b35",
+  "origin_notes": [
+    "Actual SBF program bytes captured from the deployment with the canonical d296 binary hash.",
+    "SDK fixture mints are noncanonical. Model comparisons alias labels to SOL/USDC without changing raw execution bytes.",
+    "Original provenance paths are documentary only. Verification uses the explicitly supplied bundled program and recorded inputs.",
+    "Original capture SHA256 can be reconstructed with the documented JSON serialization."
+  ],
+  "program_archive": "tests/fixtures/dlmm_d296_program.so.gz",
+  "program_archive_sha256": "22877ec13e78547331775550adf915397f740e4d7240767a1f3fc7582130de48",
+  "program_deployment_slot": 423977638,
+  "program_id": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
+  "program_length": 2229776,
+  "program_sha256": "d296c6771cec945601027613ca637c1be6721044c5859009d41c453477844c1f",
+  "programdata_capture_sha256": "767aa239b9832f9ea7bbae242f2506379399256b9a219c9a9101f7dd15681191",
+  "runtime": "solders.LiteSVM",
+  "schema": "MDLMM_PROGRAM_CASES_V1",
+  "scope": "Synthetic whole-program oracle and bounded four-variant model comparison; not D1 historical replay",
+  "solders_version": "0.27.1",
+  "source_commit": "576919e3e4368e542c402f000b4264724f7f23ec",
+  "source_commit_scope": "IDL_AND_ORIGINAL_FIXTURE_ONLY",
+  "successful_instruction_counts": {
+    "place_limit_order": 13,
+    "swap": 8,
+    "swap2": 46,
+    "swap_exact_out": 8,
+    "swap_exact_out2": 29,
+    "swap_with_price_impact": 8,
+    "swap_with_price_impact2": 8
+  }
+}
