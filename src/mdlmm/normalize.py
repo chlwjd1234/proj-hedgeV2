@@ -135,6 +135,32 @@ def _flatten_account_names(items: list[dict]) -> list[str]:
     return names
 
 
+def _typed_instruction_pool(node: dict | None, idl: IdlCodec | None) -> str | None:
+    """Locate the *lb_pair* account by its pinned IDL account name.
+
+    The transaction's account-key membership is insufficient: router transactions
+    may invoke several independent DLMM pools. Unknown/ambiguous instruction
+    layouts must return None and remain fail-closed for state mutations.
+    """
+    if not isinstance(node, dict) or not isinstance(node.get('resolved'), dict):
+        return None
+    if 'swap' in node:
+        return node['swap'].get('accounts', {}).get('lb_pair')
+    decoded = node.get('decoded_mutation')
+    if not isinstance(decoded, dict) or idl is None:
+        return None
+    name = decoded.get('name')
+    declarations = [d for d in idl.idl.get('instructions', []) if d.get('name') == name]
+    if len(declarations) != 1:
+        return None
+    accounts = node['resolved']['accounts']
+    names = _flatten_account_names(declarations[0].get('accounts', []))
+    indices = [i for i, n in enumerate(names) if n == 'lb_pair']
+    if len(indices) != 1 or len(accounts) < len(names):
+        return None
+    return accounts[indices[0]]
+
+
 def _decode_swap(node: dict, idl: IdlCodec | None) -> dict:
     """Decode actual arguments.  Only the three fixed legacy layouts have a fallback.
 
@@ -412,7 +438,26 @@ def normalize_block(slot: int, block: dict, pools: set[str], *, raw_hash: str | 
                 if not event or event['name'] in SWAP_EVENTS:
                     continue
                 fields, name = event['data'], event['name']
-                pool = fields.get('lb_pair')
+                declared_pool = fields.get('lb_pair')
+                owner_pool = _typed_instruction_pool(owner, idl)
+                owner_accounts = (owner.get('resolved', {}).get('accounts', [])
+                                  if isinstance(owner, dict) else [])
+                # A decoded event from another pool in the same router tx is
+                # irrelevant ONLY if its owning instruction proves that scope.
+                # Do not infer pool ownership from membership in tx account keys.
+                if (declared_pool is not None and owner_pool is not None
+                        and declared_pool != owner_pool):
+                    block_at(node, 'event/owning-instruction lb_pair disagreement')
+                    continue
+                if ((declared_pool is not None and declared_pool not in pools)
+                        or (declared_pool is None and owner_pool is not None
+                            and owner_pool not in pools)):
+                    if (owner_pool is not None and owner_pool not in pools
+                            and not pools.intersection(owner_accounts)):
+                        continue  # Independently proved non-target instruction/event.
+                    block_at(node, 'foreign event cannot be safely scoped to its owner')
+                    continue
+                pool = declared_pool if declared_pool is not None else owner_pool
                 if pool is None and len(relevant) == 1:
                     pool = next(iter(relevant))
                 if pool not in pools:
@@ -441,6 +486,17 @@ def normalize_block(slot: int, block: dict, pools: set[str], *, raw_hash: str | 
                 else:
                     decoded = node.get('decoded_mutation')
                     name = decoded['name'] if decoded else None
+                    mutation_pool = _typed_instruction_pool(node, idl)
+                    claimed_target = any(e.get('event', {}).get('data', {}).get('lb_pair') in pools
+                                         for e in node['owned_events'])
+                    # Only a successfully decoded, IDL-named *lb_pair* can prove
+                    # that a mutation belongs exclusively to another pool.
+                    # An unknown instruction, or any overlap with the target
+                    # pool's account list, remains a hard state-coverage blocker.
+                    if mutation_pool is not None and mutation_pool not in pools:
+                        if claimed_target or pools.intersection(node['resolved']['accounts']):
+                            block_at(node, 'foreign mutation unexpectedly references the target pool')
+                        continue
                     harmless = {'initialize_position', 'initialize_position2', 'close_position', 'close_position2'}
                     if name in harmless:
                         continue

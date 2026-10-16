@@ -416,3 +416,100 @@ def test_duplicate_inner_groups_are_not_silently_overwritten():
 def test_no_swaps_cannot_produce_a_nonempty_strict_pass():
     result = normalize(block(top=foreign_ix(), inner=[]))
     assert not result['strict_canonical_pass'] and result['canonical_swap_count'] == 0
+
+
+# ---------------------------------------------------------------------------
+# Multi-pool router attribution — canonical target swaps remain fail-closed.
+# The synthetic ClaimFee event body is deliberately minimal; on-chain evidence
+# is separately checked by the pinned full-block historical pilot.
+# ---------------------------------------------------------------------------
+
+def _scope_test_idl(pinned_idl):
+    data = deepcopy(pinned_idl.idl)
+    data['instructions'].append({
+        'name': 'claim_fee2',
+        'discriminator': list(discriminator('global', 'claim_fee2')),
+        'accounts': [{'name': 'lb_pair'}, {'name': 'position'}],
+        'args': [],
+    })
+    for name in ('ClaimFee', 'ClaimFee2'):
+        data['events'].append({'name': name,
+                               'discriminator': list(discriminator('event', name))})
+        data['types'].append({'name': name, 'type': {'kind': 'struct', 'fields': [
+            {'name': 'lb_pair', 'type': 'pubkey'}
+        ]}})
+    return IdlCodec(data)
+
+
+def _scope_claim_ix(pool, height=2):
+    return {
+        'programId': PROGRAM_ID, 'accounts': [pool, key(77)],
+        'stackHeight': height,
+        'data': b58encode(discriminator('global', 'claim_fee2')),
+    }
+
+
+def _scope_fee_event(name, pool, height=3):
+    return {
+        'programId': PROGRAM_ID, 'accounts': [],
+        'stackHeight': height,
+        'data': b58encode(EVENT_CPI_TAG + discriminator('event', name) + b58decode(pool)),
+    }
+
+
+def _scope_multiswap_block(claim_pool=FOREIGN, event_pool=FOREIGN):
+    inner = [
+        _scope_claim_ix(claim_pool),
+        _scope_fee_event('ClaimFee', event_pool),
+        _scope_fee_event('ClaimFee2', event_pool),
+        swap_ix(height=2, pool=FOREIGN),
+        *pair(event_fields(lb_pair=FOREIGN), height=3),
+        swap_ix(height=2, pool=POOL),
+        *pair(height=3),
+        swap_ix(height=2, pool=POOL, amount_in=2000),
+        *pair(event_fields(amount_in=1990), height=3),
+    ]
+    return block(top=foreign_ix(), inner=inner)
+
+
+def test_proved_foreign_claims_do_not_suppress_two_target_swaps(pinned_idl):
+    result = normalize(_scope_multiswap_block(), idl=_scope_test_idl(pinned_idl))
+    assert result['strict_canonical_pass']
+    assert result['canonical_swap_count'] == 2
+    assert not result['blockers'] and result['suppressed_swap_rows'] == 0
+    rows = result['events']
+    assert len(rows) == 2 and all(r['kind'] == 'SWAP' for r in rows)
+    assert [r['payload']['amount_in'] for r in rows] == [1000, 2000]
+    assert all(r['pool'] == POOL for r in rows)
+
+
+def test_target_claim_fee_mutation_still_blocks_even_with_two_swaps(pinned_idl):
+    result = normalize(_scope_multiswap_block(POOL, POOL), idl=_scope_test_idl(pinned_idl))
+    assert not result['strict_canonical_pass']
+    assert any(b['blocker_kind'] == 'STATE_MUTATION' and
+               b['mutation']['name'] == 'claim_fee2' for b in result['blockers'])
+
+
+def test_claim_fee_event_owner_pool_disagreement_remains_integrity_blocker(pinned_idl):
+    result = normalize(_scope_multiswap_block(POOL, FOREIGN), idl=_scope_test_idl(pinned_idl))
+    assert not result['strict_canonical_pass']
+    assert result['suppressed_swap_rows'] == 2
+    assert any('disagreement' in b['reason'] for b in result['blockers'])
+
+
+def test_foreign_mutation_referencing_target_account_still_blocks(pinned_idl):
+    fixture = _scope_multiswap_block()
+    mutation = fixture['transactions'][0]['meta']['innerInstructions'][0]['instructions'][0]
+    mutation['accounts'][1] = POOL
+    result = normalize(fixture, idl=_scope_test_idl(pinned_idl))
+    assert not result['strict_canonical_pass']
+    assert any('references the target pool' in b['reason'] for b in result['blockers'])
+
+
+def test_unowned_foreign_fee_event_remains_fail_closed(pinned_idl):
+    inner = [_scope_fee_event('ClaimFee', FOREIGN, height=2),
+             swap_ix(height=2, pool=POOL), *pair(height=3)]
+    result = normalize(block(top=foreign_ix(), inner=inner), idl=_scope_test_idl(pinned_idl))
+    assert not result['strict_canonical_pass']
+    assert result['suppressed_swap_rows'] == 1
+    assert any('owning DLMM instruction' in b['reason'] for b in result['blockers'])
