@@ -61,8 +61,13 @@ class VersionRegistry:
         if len(hits) != 1:
             raise Unavailable(f'no unique historical program binding for slot {slot}')
         entry = hits[0]
-        if entry.get('model') != 'MM_V012':
-            raise Unsupported(f'direct model not supported: {entry.get("model")}')
+        model = entry.get('model')
+        if model == 'LO_V012':
+            from .swap_transition import PROGRAM_SHA256
+            if entry.get('binary_sha256') != PROGRAM_SHA256:
+                raise Unsupported('LO_V012 requires the pinned deployed program binary')
+        elif model != 'MM_V012':
+            raise Unsupported(f'direct model not supported: {model}')
         return entry
 
     def check_event(self, event: Event) -> dict:
@@ -111,7 +116,7 @@ def compare_states(actual: PoolState, expected: PoolState) -> dict:
 
 class Replay:
     def __init__(self, initial: PoolState, registry: VersionRegistry, *, boundary: str = 'END_SLOT',
-                 allow_partial_clock: bool = False):
+                 allow_partial_clock: bool = False, bitmap_extensions=None):
         initial.validate()
         self.initial, self.state, self.registry = deepcopy(initial), deepcopy(initial), registry
         if boundary != 'END_SLOT':
@@ -122,6 +127,8 @@ class Replay:
         self.event_count = 0
         self.partial_clock_events = 0
         self.max_token_residual = 0
+        self.lo_swap_count = 0
+        self.bitmap_extensions = dict(bitmap_extensions or {})
 
     def _bind(self, event: Event):
         if event.pool != self.state.pool or event.program_id != self.state.program_id:
@@ -143,8 +150,37 @@ class Replay:
             return event.block_time_ms // 1000
         raise Unavailable('historical Clock sysvar unavailable; blockTime is not silently exact Clock')
 
+
+    def _step_lo(self, event: Event) -> dict:
+        """A single atomic LO step under explicit registry/program/evidence binding."""
+        from .lo_replay_adapter import apply_limit_order_event
+        pre = self.state
+        original = pre.to_dict()
+        timestamp = self._clock(event)
+        output = apply_limit_order_event(pre, event, timestamp,
+                                         bitmap_extensions=self.bitmap_extensions)
+        if pre.to_dict() != original:
+            raise ValidationError('LO adapter mutated source prestate')
+        next_state = output['post_state']
+        next_state.slot = event.order.slot
+        next_state.validate()
+        if event.post_state_hash is not None and event.post_state_hash != next_state.economic_hash():
+            raise ValidationError('LO event post-state continuity hash mismatch')
+        self.state = next_state
+        self.event_count += 1
+        self.lo_swap_count += 1
+        return {'event_id': event.id, 'event': asdict(event),
+                'pre': original, 'post': next_state.to_dict(),
+                'fills': output['fills'], 'fees': output['fees'],
+                'quote': output['quote'], 'transition': output['transition_summary'],
+                'token_conservation_residual': 0, 'state_continuity': 'PASS',
+                'swap_evidence_scope': output['scope'],
+                'historical_prestate_validated': False}
+
     def step(self, event: Event) -> dict:
         self._bind(event)
+        if event.kind == 'SWAP' and self.registry.resolve(event.order.slot).get('model') == 'LO_V012':
+            return self._step_lo(event)
         before = self.state
         if event.kind != 'SWAP':
             self.state = deepcopy(self.state)
@@ -266,7 +302,11 @@ class Replay:
         for event in ordered_events(events):
             row = self.step(event)
             if event.id in checkpoints:
-                row['checkpoint'] = compare_states(self.state, checkpoints[event.id])
+                if self.registry.resolve(event.order.slot).get('model') == 'LO_V012':
+                    from .lo_replay_adapter import compare_represented_lo_states
+                    row['checkpoint'] = compare_represented_lo_states(self.state, checkpoints[event.id])
+                else:
+                    row['checkpoint'] = compare_states(self.state, checkpoints[event.id])
                 self.checkpoints += 1
                 if not self.partial_clock_events:
                     self.scope_level = Level.ACCOUNT_PARITY
@@ -275,6 +315,23 @@ class Replay:
             raise Unavailable('zero factual events is not a validation pass')
 
     def report(self) -> dict:
+        if self.lo_swap_count:
+            from .lo_replay_adapter import SCOPE
+            return {'events': self.event_count, 'typed_swap_count': self.lo_swap_count,
+                    'checkpoints': self.checkpoints, 'validation_level': str(self.scope_level),
+                    'partial_clock_events': self.partial_clock_events,
+                    'max_token_conservation_residual': self.max_token_residual,
+                    'account_parity_scope': SCOPE,
+                    'account_parity_excluded': ['full_account_bytes','Oracle','SPL_token_accounts',
+                                                'runtime_fee_payer_metadata','non_swap_instruction_writes'],
+                    'mechanics_scope': 'LO_V012_TYPED_CANONICAL_SWAP_EVENT_PARITY',
+                    'unsupported_semantics': ['FULL_D1_WITHOUT_BLOCK_START_AND_NON_SWAP_EVIDENCE',
+                                               'UNKNOWN_BITMAP_EXTENSION', 'TOKEN_2022',
+                                               'NON_SWAP_STATE_MUTATIONS_WITHOUT_WITNESSES'],
+                    'economic_hash_schema': ECONOMIC_STATE_HASH_SCHEMA,
+                    'full_program_byte_parity': 'UNAVAILABLE',
+                    'historical_gate': 'UNAVAILABLE',
+                    'data_kind': self.initial.data_kind}
         return {'events': self.event_count, 'checkpoints': self.checkpoints,
                 'validation_level': str(self.scope_level), 'partial_clock_events': self.partial_clock_events,
                 'max_token_conservation_residual': self.max_token_residual,

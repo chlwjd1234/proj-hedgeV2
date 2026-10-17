@@ -37,6 +37,11 @@ def validate_dataset(dataset:Dataset,output:Path)->dict:
             engine=Replay(initial,dataset.registry)
             n=write_jsonl(output/trace_rel,(compact_trace(r) for r in engine.run(dataset.events(segment),checkpoints)))
             report=engine.report();counts+=n
+            # The old D0 checkpoint bundle omits transaction-scoped SPL CPI,
+            # Oracle byte and full-block non-swap mutation evidence. LO model
+            # agreement may not be promoted through that weaker D0 gate.
+            if dataset.kind == 'HISTORICAL' and engine.lo_swap_count:
+                raise Unavailable('LO model replay needs a separate raw-account/CPI/Oracle/full-block promotion gate')
             if engine.scope_level!='ACCOUNT_PARITY':
                 raise Unavailable('factual replay did not achieve independent account parity')
             if engine.checkpoints!=len(checkpoints):

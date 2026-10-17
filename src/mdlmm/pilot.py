@@ -9,7 +9,7 @@ from .attribution import AttributionEngine
 from .capacity import perturbation
 from .dataset import Dataset
 from .errors import Unavailable,ValidationError,ResearchError
-from .model import PoolState
+from .model import PoolState, FunctionType
 from .reference import Reference
 from .replay import expand_traces
 from .regimes import explicit_windows,select_windows,describe,rv30_width
@@ -115,6 +115,9 @@ def pilot(dataset:Dataset,d0_path:Path,d0_result:dict,output:Path,config:dict)->
                                 for capital in cfg['capital_ladder']:
                                     try:
                                         pre=PoolState.from_dict(row['pre'])
+                                        if (row['event']['payload'].get('exact_out') is True
+                                                or pre.effective_function_type == FunctionType.LIMIT_ORDER):
+                                            raise Unavailable('hypothetical capacity is not validated for LO/exact-out historical swaps')
                                         capacity=perturbation(pre,row['event']['payload']['amount_in'],
                                             row['event']['payload']['swap_for_y'],row['event']['clock_unix_timestamp'],
                                             out['reference_price'],engine.position.lower_bin,engine.position.upper_bin,capital)
