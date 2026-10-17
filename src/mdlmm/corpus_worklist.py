@@ -100,7 +100,13 @@ def iter_json_array(path: Path, key: str = 'entries'):
 
 
 def scoped_dlmm_instructions(row: dict, pool: str, idl: IdlCodec):
-    """Conservative mutation discovery, not proof of complete block effects."""
+    """Recover IDL-named mutation ownership without inferring mutation execution.
+
+    An undecodable but uniquely named instruction remains an *unparsed target*
+    when its declared lb_pair account identifies the selected pool. It never
+    becomes a replayable/validated economic transition merely by being named.
+    """
+    from .mutation_scope import identify_mutation_instruction
     tx, meta = row['transaction'], row['meta']
     if meta is None or meta.get('err') is not None:
         return []
@@ -115,37 +121,43 @@ def scoped_dlmm_instructions(row: dict, pool: str, idl: IdlCodec):
             if node.get('program') != PROGRAM_ID:
                 continue
             if node.get('decode_error') or node.get('resolved') is None:
-                found.append({'owner': 'UNKNOWN', 'name': 'DECODE_ERROR'})
+                found.append({'owner': 'UNKNOWN', 'name': 'DECODE_ERROR',
+                              'outer': outer, 'inner': node['inner_index'],
+                              'args_status': 'NOT_DECODED'})
                 continue
             raw = node['resolved']['raw']
             if raw.startswith(EVENT_CPI_TAG):
                 continue
+            accounts = node['resolved']['accounts']
             name = SWAP_DISCRIMINATORS.get(raw[:8])
             if name:
-                # Swaps always begin with lb_pair in the pinned schema.
-                accounts = node['resolved']['accounts']
+                # All pinned swap variants begin with the LbPair account.
                 owner = accounts[0] if accounts else None
+                args_status = 'SWAP_INSTRUCTION_NOT_EXECUTED_BY_SCOPE_SCAN'
+                scope = ('TARGET' if owner == pool else
+                         'AMBIGUOUS_SHARED_ACCOUNT' if pool in accounts else
+                         'FOREIGN_WITH_PROVEN_LB_PAIR_ROLE' if owner else 'UNRESOLVED')
             else:
-                try:
-                    decoded = idl.decode_named('instructions', raw)
-                    name = decoded['name']
-                    node['decoded_mutation'] = decoded
-                except Exception:
-                    name = 'UNDECODED_' + raw[:8].hex()
-                owner = _typed_instruction_pool(node, idl)
-            if owner == pool:
+                verdict = identify_mutation_instruction(raw, accounts, pool, idl)
+                name = verdict['name']
+                scope = verdict['scope']
+                args_status = verdict['args_status']
+            if scope == 'TARGET':
                 found.append({'owner': 'TARGET', 'name': name,
-                              'outer': outer, 'inner': node['inner_index']})
-            elif owner in POOLS or owner is not None:
-                # A different pool may share a router transaction. If it also
-                # explicitly lists the target account, its effects require
-                # manual attribution and must not be presumed harmless.
-                if pool in node['resolved']['accounts']:
-                    found.append({'owner': 'AMBIGUOUS_SHARED_ACCOUNT', 'name': name})
-            elif pool in node['resolved']['accounts']:
-                found.append({'owner': 'UNKNOWN', 'name': name})
+                              'outer': outer, 'inner': node['inner_index'],
+                              'args_status': args_status,
+                              'discriminator': raw[:8].hex()})
+            elif scope == 'AMBIGUOUS_SHARED_ACCOUNT':
+                found.append({'owner': 'AMBIGUOUS_SHARED_ACCOUNT', 'name': name,
+                              'outer': outer, 'inner': node['inner_index'],
+                              'args_status': args_status})
+            elif scope != 'FOREIGN_WITH_PROVEN_LB_PAIR_ROLE':
+                # Without a named, independently identified foreign LbPair,
+                # never treat a no-LbPair/unknown instruction as harmless.
+                found.append({'owner': 'UNKNOWN', 'name': name,
+                              'outer': outer, 'inner': node['inner_index'],
+                              'args_status': args_status})
     return found
-
 
 def scan_pages(root: Path, conn: sqlite3.Connection, *, idl: IdlCodec,
                max_pages_per_segment: int | None) -> dict:
@@ -165,6 +177,7 @@ def scan_pages(root: Path, conn: sqlite3.Connection, *, idl: IdlCodec,
                 scan_complete = False
             counts = Counter()
             mutation_counts = Counter()
+            arg_failure_counts = Counter()
             first_slot = last_slot = None
             for i, path in enumerate(selected):
                 if path.name != f'page_{i:06d}.json':
@@ -187,6 +200,10 @@ def scan_pages(root: Path, conn: sqlite3.Connection, *, idl: IdlCodec,
                     targets = [n for n in discovered if n['owner']=='TARGET']
                     ambiguous = [n for n in discovered if n['owner'] in ('UNKNOWN','AMBIGUOUS_SHARED_ACCOUNT')]
                     counts['target_instructions'] += len(targets)
+                    for item in targets:
+                        if item.get('args_status') == 'IDL_ARGS_UNPARSEABLE':
+                            counts['known_target_args_unparseable'] += 1
+                            arg_failure_counts[item['name']] += 1
                     counts['ambiguous_instruction_rows'] += bool(ambiguous)
                     counts['touch_without_identified_target'] += not bool(targets or ambiguous)
                     for item in targets:
@@ -204,6 +221,7 @@ def scan_pages(root: Path, conn: sqlite3.Connection, *, idl: IdlCodec,
                     for item in ambiguous:
                         mutation_counts['UNKNOWN_SCOPE:' + item['name']] += 1
             stats[key] = {'pages_total': len(pages), 'pages_scanned': counts['pages'],
+                          'named_target_arg_failures':dict(arg_failure_counts),
                           'rows_scanned': counts['rows'], 'first_slot': first_slot, 'last_slot': last_slot,
                           'metrics': dict(counts), 'target_instruction_names': dict(mutation_counts)}
             print(f'PAGE_SCAN {label} {pool[:8]} pages={counts["pages"]}/{len(pages)} '
